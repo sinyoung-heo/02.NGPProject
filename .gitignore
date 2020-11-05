@@ -39,3 +39,6 @@
 /Client/Client/Release
 /Client/Client/x64
 /Client/Client/Debug
+/Server/.vs
+/Server/Debug
+/Server/Server/Debug
