@@ -1,0 +1,91 @@
+﻿  Armor_H.cpp
+  Armor_L.cpp
+  BmpMgr.cpp
+  Boom.cpp
+  Boris.cpp
+  BossField.cpp
+  Client.cpp
+  CollisionMgr.cpp
+  ComboAttack.cpp
+  ComboCnt.cpp
+  Cow.cpp
+  DmgBox.cpp
+  Dungeon.cpp
+  ElectricBolt.cpp
+  EquipButton.cpp
+  Equipment.cpp
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\Equipment.cpp(244,18): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\Equipment.cpp(278,17): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\Equipment.cpp(289,122): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Field.cpp
+  Helmet_H.cpp
+  Helmet_L.cpp
+  HpPotionEffect.cpp
+  컴파일하고 있습니다...
+  InvenButton.cpp
+  Inventory.cpp
+  Item.cpp
+  Jelly.cpp
+  KeyMgr.cpp
+  LevelUp.cpp
+  LevelUpEffect.cpp
+  Logo.cpp
+  MainGame.cpp
+  MathMgr.cpp
+  MonCrash.cpp
+  MonSkillColBox.cpp
+  MouseMgr.cpp
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\MouseMgr.cpp(76,45): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\MouseMgr.cpp(76,29): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  MpPotionEffect.cpp
+  MultiAttack.cpp
+  MyBmp.cpp
+  MyButton.cpp
+  MyEdit.cpp
+  MyMenu.cpp
+  Ninja.cpp
+  컴파일하고 있습니다...
+  Obj.cpp
+  ObjMgr.cpp
+  Player.cpp
+  PlayerCrash.cpp
+  PlayerInfo.cpp
+  PotalDungeon.cpp
+  PotalTown.cpp
+  Quake.cpp
+  Scene.cpp
+  SceneMgr.cpp
+  ScrollMgr.cpp
+  Seller.cpp
+  SellLst.cpp
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\SellLst.cpp(182,103): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Shoes_H.cpp
+  Shoes_L.cpp
+  Skill.cpp
+  SkillColBox.cpp
+  SkillIcon.cpp
+  SkillMoon.cpp
+  SkillSoul.cpp
+  컴파일하고 있습니다...
+  SoundMgr.cpp
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\SoundMgr.cpp(82,14): warning C4244: '초기화 중': 'intptr_t'에서 'long'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\Client\SoundMgr.cpp(106,37): warning C4267: '초기화 중': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  StateButton.cpp
+  Store.cpp
+  Tile.cpp
+  TileMgr.cpp
+  Town.cpp
+  Weapon_H.cpp
+  Weapon_L.cpp
+  WizardBall.cpp
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_CreateSound
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_Sound_Release
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_Create
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_Update
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_Channel_Stop
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_PlaySound
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_Release
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_Close
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_Channel_SetMode
+SoundMgr.obj : error LNK2001: 확인할 수 없는 외부 기호 FMOD_System_Init
+D:\02. KoreaPolytechnicUniversity\02.프로젝트\2020_3-1_윈도우프로그래밍\최종프로젝트_허신영_박용환\x64\Release\Client.exe : fatal error LNK1120: 10개의 확인할 수 없는 외부 참조입니다.

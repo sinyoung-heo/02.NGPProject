@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+/Client/.vs
+/Client/Release/*.pdb
+/Client/Release/*.iobj
+/Client/Release/*.ipdb
+/Client/Debug/*.pdb
+/Client/Debug/*.ilk
