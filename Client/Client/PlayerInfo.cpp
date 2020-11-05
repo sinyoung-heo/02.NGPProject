@@ -53,7 +53,7 @@ void CPlayerInfo::Initialize()
 
 
 	m_pPlayer = CObjMgr::GetInstance()->GetPlayer();
-	m_tAbility = dynamic_cast<CPlayer*>(m_pPlayer)->GetAbility();
+	m_tAbility = static_cast<CPlayer*>(m_pPlayer)->GetAbility();
 }
 
 void CPlayerInfo::LateInit()
@@ -67,7 +67,7 @@ int CPlayerInfo::Update()
 	if (m_bIsDead)
 		return DEAD_OBJ;
 
-	m_tAbility = dynamic_cast<CPlayer*>(m_pPlayer)->GetAbility();
+	m_tAbility = static_cast<CPlayer*>(m_pPlayer)->GetAbility();
 
 	/*POINT pt = {};
 	GetCursorPos(&pt);

@@ -81,14 +81,14 @@ int CSellLst::Update()
 		return DEAD_OBJ;
 
 	/*상점 꺼진 상태면 인벤토리 off*/
-	dynamic_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(false);
-	dynamic_cast<CInventory*>(m_pInventory)->SetbIsSellLstOn(false);
+	static_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(false);
+	static_cast<CInventory*>(m_pInventory)->SetbIsSellLstOn(false);
 
 	if (m_bIsSellLst)
 	{
 		/*상점 켜진 상태면 인벤토리 on*/
-		dynamic_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(true);
-		dynamic_cast<CInventory*>(m_pInventory)->SetbIsSellLstOn(true);
+		static_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(true);
+		static_cast<CInventory*>(m_pInventory)->SetbIsSellLstOn(true);
 
 		POINT pt = {};
 		GetCursorPos(&pt);
@@ -112,11 +112,11 @@ int CSellLst::Update()
 
 					/*선택한 item과 똑같은 정보의 객체 생성.*/
 					CObj* pNewItem = new CItem(m_vecItem[m_iSelect]->GetInfo());
-					dynamic_cast<CItem*>(pNewItem)->SetImageKey(dynamic_cast<CItem*>(m_vecItem[m_iSelect])->GetImageKey());
-					dynamic_cast<CItem*>(pNewItem)->SetItemType(dynamic_cast<CItem*>(m_vecItem[m_iSelect])->GetItemType());
+					static_cast<CItem*>(pNewItem)->SetImageKey(static_cast<CItem*>(m_vecItem[m_iSelect])->GetImageKey());
+					static_cast<CItem*>(pNewItem)->SetItemType(static_cast<CItem*>(m_vecItem[m_iSelect])->GetItemType());
 
 					/*pInventory -> BuyItem() 호출 --> Inventory에 push back.*/
-					dynamic_cast<CInventory*>(m_pInventory)->BuyItem(pNewItem);
+					static_cast<CInventory*>(m_pInventory)->BuyItem(pNewItem);
 				}
 			}
 		}
@@ -161,7 +161,7 @@ void CSellLst::Render(HDC hDC)
 		int i = 0;
 		for (CObj*& pObj : m_vecItem)
 		{
-			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(dynamic_cast<CItem*>(pObj)->GetImageKey().c_str()));
+			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(static_cast<CItem*>(pObj)->GetImageKey().c_str()));
 
 			GdiTransparentBlt(hDC, m_tBlank[i].left, m_tBlank[i].top, 24, 24, hMemDC, 0, 0, 24, 24, RGB(255, 0, 255));
 			

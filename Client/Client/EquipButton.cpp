@@ -54,7 +54,7 @@ int CEquipButton::Update()
 
 			m_iDrawKey += 1;
 			m_bIsUiOn = !m_bIsUiOn;
-			dynamic_cast<CEquipment*>(m_pPlayerEquip)->SetbIsEquipOn(m_bIsUiOn);
+			static_cast<CEquipment*>(m_pPlayerEquip)->SetbIsEquipOn(m_bIsUiOn);
 		}
 
 		m_sound = true;

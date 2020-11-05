@@ -23,7 +23,7 @@ void CTown::Initialize()
 	if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
 	{
 		CObj* pTemp = CObjMgr::GetInstance()->GetPlayer();
-		m_bIsCreate = dynamic_cast<CPlayer*>(pTemp)->GetIsCreate();
+		m_bIsCreate = static_cast<CPlayer*>(pTemp)->GetIsCreate();
 	}
 	if (!m_bIsCreate)
 	{

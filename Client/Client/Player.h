@@ -12,12 +12,12 @@ public:
 	virtual ~CPlayer();
 
 	// CObj을(를) 통해 상속됨
-	virtual void Initialize() override;
-	virtual void LateInit();
-	virtual int Update() override;
-	virtual void LateUpdate() override;
-	virtual void Render(HDC hDC) override;
-	virtual void Release() override;
+	virtual void	Initialize() override;
+	virtual void	LateInit();
+	virtual int		Update() override;
+	virtual void	LateUpdate() override;
+	virtual void	Render(HDC hDC) override;
+	virtual void	Release() override;
 
 public:
 	void SetStanceHIT() { m_eCurStance = HIT, m_bIsHit = true; }
@@ -29,6 +29,8 @@ public:
 	const bool& GetbIsCombo() const { return m_bIsCombo;  }
 
 private:
+	// 11.06 KeyInput 추가.
+	void KeyInput();
 	void SceneChange();
 	void IsOffSet();
 	void IsLevelUp();

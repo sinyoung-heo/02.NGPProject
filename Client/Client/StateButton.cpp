@@ -58,7 +58,7 @@ int CStateButton::Update()
 
 			m_iDrawKey += 1;
 			m_bIsUiOn = !m_bIsUiOn;
-			dynamic_cast<CPlayerInfo*>(m_pPlayerInfo)->SetbIsInfoOn(m_bIsUiOn);
+			static_cast<CPlayerInfo*>(m_pPlayerInfo)->SetbIsInfoOn(m_bIsUiOn);
 		}
 
 		m_sound = true;

@@ -26,9 +26,9 @@ void CMyMenu::Initialize()
 	CObj* pCredit = CAbstractFactory<CMyButton>::CreateObj(400.f, 451);
 	CObj* pExit = CAbstractFactory<CMyButton>::CreateObj(400.f, 475.f);
 
-	dynamic_cast<CMyButton*>(pStart)->SetImageKey(L"Start");
-	dynamic_cast<CMyButton*>(pCredit)->SetImageKey(L"Credit");
-	dynamic_cast<CMyButton*>(pExit)->SetImageKey(L"Exit");
+	static_cast<CMyButton*>(pStart)->SetImageKey(L"Start");
+	static_cast<CMyButton*>(pCredit)->SetImageKey(L"Credit");
+	static_cast<CMyButton*>(pExit)->SetImageKey(L"Exit");
 
 	CObjMgr::GetInstance()->AddObject(pStart, ObjID::BUTTON);
 	CObjMgr::GetInstance()->AddObject(pCredit, ObjID::BUTTON);

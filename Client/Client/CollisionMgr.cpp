@@ -35,8 +35,8 @@ void CCollisionMgr::CollisionPlayerSkill(OBJLIST & dstLst, OBJLIST & srcLst, COb
 				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CPlayerCrash>::CreateObj(pDst->GetInfo().fX, pDst->GetInfo().fY),
 					ObjID::EFFECT);
 
-				dynamic_cast<CJelly*>(pDst)->SetStanceHIT();	//몬스터 피격상태 
-				dynamic_cast<CJelly*>(pDst)->SetStateAngry();	//몬스터 state 변화
+				static_cast<CJelly*>(pDst)->SetStanceHIT();	//몬스터 피격상태 
+				static_cast<CJelly*>(pDst)->SetStateAngry();	//몬스터 state 변화
 
 				/*몬스터 Hp 감소*/
 				pDst->SetHp(pSrc->GetInfo().iAtt);
@@ -73,7 +73,7 @@ void CCollisionMgr::CollisionMonsterSkill(OBJLIST & dstLst, OBJLIST & srcLst)
 				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMonCrash>::CreateObj(pDst->GetInfo().fX, pDst->GetInfo().fY),
 					ObjID::EFFECT);
 
-				dynamic_cast<CPlayer*>(pDst)->SetStanceHIT();	//Player 피격상태 
+				static_cast<CPlayer*>(pDst)->SetStanceHIT();	//Player 피격상태 
 
 				pDst->SetHp(pSrc->GetInfo().iAtt);
 
@@ -172,7 +172,7 @@ bool CCollisionMgr::CollisionTile(CObj * pTile, CObj * pPlayer)
 	const RECT TileRect = pTile->GetRect();
 	const RECT PlayerRect = pPlayer->GetColRect();
 
-	int iDrawID = dynamic_cast<CTile*>(pTile)->GetDrawID();
+	int iDrawID = static_cast<CTile*>(pTile)->GetDrawID();
 
 	float w;
 	float h;

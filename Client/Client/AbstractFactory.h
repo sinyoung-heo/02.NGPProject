@@ -60,7 +60,7 @@ public:
 		CObj* pObj = new T;
 		pObj->Initialize();
 		pObj->SetPos(x, y);
-		dynamic_cast<CDmgBox*>(pObj)->SetDmgInput(_dmg);
+		static_cast<CDmgBox*>(pObj)->SetDmgInput(_dmg);
 
 		return pObj;
 	}
@@ -70,7 +70,7 @@ public:
 		CObj* pObj = new T;
 		pObj->Initialize();
 		pObj->SetPos(x, y);
-		dynamic_cast<CComboCnt*>(pObj)->SetDmgInput(_dmg);
+		static_cast<CComboCnt*>(pObj)->SetDmgInput(_dmg);
 
 		return pObj;
 	}

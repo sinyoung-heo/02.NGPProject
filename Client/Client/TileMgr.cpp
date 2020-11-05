@@ -167,7 +167,7 @@ void CTileMgr::SaveData(wstring pMapImageKey)
 	for (auto& pTile : m_vecTile)
 	{
 		tInfo = pTile->GetInfo();
-		iDrawID = dynamic_cast<CTile*>(pTile)->GetDrawID();
+		iDrawID = static_cast<CTile*>(pTile)->GetDrawID();
 
 		WriteFile(hFile, &tInfo, sizeof(INFO), &dwByte, 0);
 		WriteFile(hFile, &iDrawID, sizeof(int), &dwByte, 0);
@@ -214,7 +214,7 @@ void CTileMgr::LoadData(wstring pMapImageKey)
 			break;
 
 		CObj* pTile = CAbstractFactory<CTile>::CreateObj(tInfo);
-		dynamic_cast<CTile*>(pTile)->SetDrawID(iDrawID);
+		static_cast<CTile*>(pTile)->SetDrawID(iDrawID);
 
 		m_vecTile.push_back(pTile);
 	}
@@ -228,5 +228,5 @@ void CTileMgr::PickTile(int iIndex, int iDrawID)
 	if (0 > iIndex || (size_t)iIndex >= m_vecTile.size())
 		return;
 
-	dynamic_cast<CTile*>(m_vecTile[iIndex])->SetDrawID(iDrawID);
+	static_cast<CTile*>(m_vecTile[iIndex])->SetDrawID(iDrawID);
 }

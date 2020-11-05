@@ -59,7 +59,7 @@ int CSeller::Update()
 		{
 
 			m_bIsSellLstOn = !m_bIsSellLstOn;
-			dynamic_cast<CSellLst*>(m_pSellLst)->SetbIsSellLst(m_bIsSellLstOn);
+			static_cast<CSellLst*>(m_pSellLst)->SetbIsSellLst(m_bIsSellLstOn);
 		}
 	}
 

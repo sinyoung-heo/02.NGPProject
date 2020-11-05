@@ -160,10 +160,10 @@ void CEquipment::Render(HDC hDC)
 
 		for (CObj* pObj : m_vecEquip)
 		{
-			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(dynamic_cast<CItem*>(pObj)->GetImageKey()));
+			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(static_cast<CItem*>(pObj)->GetImageKey()));
 
 			/*아이템 type에 따라 render 위치 지정*/
-			ItemType::TYPE eType = dynamic_cast<CItem*>(pObj)->GetItemType();
+			ItemType::TYPE eType = static_cast<CItem*>(pObj)->GetItemType();
 
 			GdiTransparentBlt(hDC, m_tBlank[eType].left, m_tBlank[eType].top, 24, 24, hMemDC, 0, 0, 24, 24, RGB(255, 0, 255));
 
@@ -204,11 +204,11 @@ void CEquipment::PutOnItem(int _index, ItemType::TYPE _eTpye)
 		/*해당 type 아이템이 장착 중이 아니라면.*/
 
 		/*해당 index의 아이템 정보.*/
-		CObj* pItem = dynamic_cast<CInventory*>(m_pInventory)->GetItemInfo(_index);
+		CObj* pItem = static_cast<CInventory*>(m_pInventory)->GetItemInfo(_index);
 
 		CObj* pNewItem = new CItem(pItem->GetInfo());
-		dynamic_cast<CItem*>(pNewItem)->SetImageKey(dynamic_cast<CItem*>(pItem)->GetImageKey());
-		dynamic_cast<CItem*>(pNewItem)->SetItemType(dynamic_cast<CItem*>(pItem)->GetItemType());
+		static_cast<CItem*>(pNewItem)->SetImageKey(static_cast<CItem*>(pItem)->GetImageKey());
+		static_cast<CItem*>(pNewItem)->SetItemType(static_cast<CItem*>(pItem)->GetItemType());
 
 		m_vecEquip.push_back(pNewItem);
 
@@ -220,7 +220,7 @@ void CEquipment::PutOnItem(int _index, ItemType::TYPE _eTpye)
 
 
 		/*inventory에서 해당 index 아이템 erase*/
-		dynamic_cast<CInventory*>(m_pInventory)->EraseItem(_index);
+		static_cast<CInventory*>(m_pInventory)->EraseItem(_index);
 
 
 		/*장착 중으로 변경.*/
@@ -229,25 +229,25 @@ void CEquipment::PutOnItem(int _index, ItemType::TYPE _eTpye)
 	else
 	{
 		/*해당 type 아이템이 장착 중이라면. 정보 swap.*/
-		CObj* pItem = dynamic_cast<CInventory*>(m_pInventory)->GetItemInfo(_index);
+		CObj* pItem = static_cast<CInventory*>(m_pInventory)->GetItemInfo(_index);
 
 		/*임시 변수에 inventory에서 넘어온 정보 저장.*/
 		INFO tTempInfo = pItem->GetInfo();
-		wstring szTempImageKey = dynamic_cast<CItem*>(pItem)->GetImageKey();
-		ItemType::TYPE eTempType = dynamic_cast<CItem*>(pItem)->GetItemType();
+		wstring szTempImageKey = static_cast<CItem*>(pItem)->GetImageKey();
+		ItemType::TYPE eTempType = static_cast<CItem*>(pItem)->GetItemType();
 
 		/*장비창에 있는 아이템정보 인벤토리로 전달.*/
 		for (size_t i = 0; i < m_vecEquip.size(); ++i)
 		{
-			if (dynamic_cast<CItem*>(m_vecEquip[i])->GetItemType() == _eTpye)
+			if (static_cast<CItem*>(m_vecEquip[i])->GetItemType() == _eTpye)
 			{
 				m_iSelect = i;
 				break;
 			}
 		}
 
-		dynamic_cast<CInventory*>(m_pInventory)->SetItemInfo(_index, m_vecEquip[m_iSelect]->GetInfo(),
-			dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->GetImageKey(), dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType());
+		static_cast<CInventory*>(m_pInventory)->SetItemInfo(_index, m_vecEquip[m_iSelect]->GetInfo(),
+			static_cast<CItem*>(m_vecEquip[m_iSelect])->GetImageKey(), static_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType());
 
 		/*장비창에 있는 아이템 정보 Player에서 빼준다.*/
 		m_pPlayer->SetMaxHp(m_vecEquip[m_iSelect]->GetInfo().iMaxHp *-1);
@@ -257,8 +257,8 @@ void CEquipment::PutOnItem(int _index, ItemType::TYPE _eTpye)
 
 		/*임시 변수에 있는 값 장비창으로 전달*/
 		m_vecEquip[m_iSelect]->SetInfo(tTempInfo);
-		dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->SetImageKey(szTempImageKey);
-		dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->SetItemType(eTempType);
+		static_cast<CItem*>(m_vecEquip[m_iSelect])->SetImageKey(szTempImageKey);
+		static_cast<CItem*>(m_vecEquip[m_iSelect])->SetItemType(eTempType);
 
 		/*장비창에 있는 아이템 정보 Player에 다시 더해준다.*/
 		m_pPlayer->SetMaxHp(m_vecEquip[m_iSelect]->GetInfo().iMaxHp );
@@ -273,7 +273,7 @@ void CEquipment::PutOffItem(int _index)
 	/*해당 index의 아이템 type 을 찾는다.*/
 	for (size_t i = 0; i < m_vecEquip.size(); ++i)
 	{
-		if (dynamic_cast<CItem*>(m_vecEquip[i])->GetItemType() == _index)
+		if (static_cast<CItem*>(m_vecEquip[i])->GetItemType() == _index)
 		{
 			m_iSelect = i;
 			break;
@@ -282,12 +282,12 @@ void CEquipment::PutOffItem(int _index)
 
 
 	CObj* pPutOffItem = new CItem(m_vecEquip[m_iSelect]->GetInfo());
-	dynamic_cast<CItem*>(pPutOffItem)->SetImageKey(dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->GetImageKey());
-	dynamic_cast<CItem*>(pPutOffItem)->SetItemType(dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType());
+	static_cast<CItem*>(pPutOffItem)->SetImageKey(static_cast<CItem*>(m_vecEquip[m_iSelect])->GetImageKey());
+	static_cast<CItem*>(pPutOffItem)->SetItemType(static_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType());
 
 	/*인벤토리에 아이템 추가.*/
-	dynamic_cast<CInventory*>(m_pInventory)->SetIsEmpty(dynamic_cast<CInventory*>(m_pInventory)->GetInvenItemVec().size(), 1);
-	dynamic_cast<CInventory*>(m_pInventory)->GetInvenItemVec().push_back(pPutOffItem);
+	static_cast<CInventory*>(m_pInventory)->SetIsEmpty(static_cast<CInventory*>(m_pInventory)->GetInvenItemVec().size(), 1);
+	static_cast<CInventory*>(m_pInventory)->GetInvenItemVec().push_back(pPutOffItem);
 
 	/*Player 능력치 조정.*/
 	m_pPlayer->SetMaxHp(m_vecEquip[m_iSelect]->GetInfo().iMaxHp * -1);
@@ -296,7 +296,7 @@ void CEquipment::PutOffItem(int _index)
 	m_pPlayer->SetAtt(m_vecEquip[m_iSelect]->GetInfo().iAtt * -1);
 
 	/*장비창에서 해당 아이템 제거.*/
-	m_iIsEmpty[dynamic_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType()] = 0;
+	m_iIsEmpty[static_cast<CItem*>(m_vecEquip[m_iSelect])->GetItemType()] = 0;
 	SafeDelete(m_vecEquip[m_iSelect]);
 
 	vector<CObj*>::iterator iter = m_vecEquip.begin();

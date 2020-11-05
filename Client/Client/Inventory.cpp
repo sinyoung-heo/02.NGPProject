@@ -21,8 +21,8 @@ CInventory::~CInventory()
 void CInventory::SetItemInfo(int _index,const INFO & _info, wstring _imagekey, ItemType::TYPE _type)
 {
 	m_vecInven[_index]->SetInfo(_info);
-	dynamic_cast<CItem*>(m_vecInven[_index])->SetImageKey(_imagekey);
-	dynamic_cast<CItem*>(m_vecInven[_index])->SetItemType(_type);
+	static_cast<CItem*>(m_vecInven[_index])->SetImageKey(_imagekey);
+	static_cast<CItem*>(m_vecInven[_index])->SetItemType(_type);
 }
 
 void CInventory::Initialize()
@@ -152,7 +152,7 @@ int CInventory::Update()
 							/*상점 창이 꺼져 있다면 클릭한 아이템 장착.*/
 							/*index 값과 Type값을 전달해준다.*/
 							if(m_iIsEmpty[m_iSelect] == 1)
-								dynamic_cast<CEquipment*>(m_pEquipment)->PutOnItem(m_iSelect, dynamic_cast<CItem*>(m_vecInven[m_iSelect])->GetItemType());
+								static_cast<CEquipment*>(m_pEquipment)->PutOnItem(m_iSelect, static_cast<CItem*>(m_vecInven[m_iSelect])->GetItemType());
 						}
 					}
 				}
@@ -200,7 +200,7 @@ void CInventory::Render(HDC hDC)
 		int i = 0;
 		for (CObj*& pObj : m_vecInven)
 		{
-			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(dynamic_cast<CItem*>(pObj)->GetImageKey()));
+			NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(static_cast<CItem*>(pObj)->GetImageKey()));
 			GdiTransparentBlt(hDC, m_tBlank[i].left, m_tBlank[i].top, 24, 24, hMemDC, 0, 0, 24, 24, RGB(255, 0, 255));
 
 			++i;

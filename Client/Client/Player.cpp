@@ -84,11 +84,11 @@ void CPlayer::Initialize()
 	m_eCurStance = IDLE;
 	m_ePreStance = m_eCurStance;
 
-	m_tFrame.iFrameStart = 0;
-	m_tFrame.iFrameEnd = 4;
-	m_tFrame.iScene = 5;
-	m_tFrame.dwOldTime = GetTickCount();
-	m_tFrame.dwFrameSpd = 200;
+	m_tFrame.iFrameStart	= 0;
+	m_tFrame.iFrameEnd		= 4;
+	m_tFrame.iScene			= 5;
+	m_tFrame.dwOldTime		= GetTickCount();
+	m_tFrame.dwFrameSpd		= 200;
 
 	m_iMoveState	= 0;
 	m_bIsRunning	= true;
@@ -100,20 +100,20 @@ void CPlayer::Initialize()
 	m_bIsCreate = true;
 
 	/*Player Info*/
-	m_tInfo.fCX = 256.f;
-	m_tInfo.fCY = 256.f;
-	m_tInfo.szName = L"Sin_Young";
-	m_tInfo.iLevel = 1;
-	m_tInfo.iMaxHp = 7000;
-	m_tInfo.iHp = m_tInfo.iMaxHp;
-	m_tInfo.iMaxMp = 3000;
-	m_tInfo.iMp = m_tInfo.iMaxMp;
-	m_tInfo.iMaxSp = 5000;
-	m_tInfo.iSp = m_tInfo.iMaxSp;
-	m_tInfo.iAtt = 123;
-	m_tInfo.iExp = 0;
+	m_tInfo.fCX		= 256.f;
+	m_tInfo.fCY		= 256.f;
+	m_tInfo.szName	= L"Sin_Young";
+	m_tInfo.iLevel	= 1;
+	m_tInfo.iMaxHp	= 7000;
+	m_tInfo.iHp		= m_tInfo.iMaxHp;
+	m_tInfo.iMaxMp	= 3000;
+	m_tInfo.iMp		= m_tInfo.iMaxMp;
+	m_tInfo.iMaxSp	= 5000;
+	m_tInfo.iSp		= m_tInfo.iMaxSp;
+	m_tInfo.iAtt	= 123;
+	m_tInfo.iExp	= 0;
 	m_tInfo.iMaxExp = 200;
-	m_tInfo.iGold = 1000000;
+	m_tInfo.iGold	= 1000000;
 
 	m_tAbility.iStap	= 2;
 	m_tAbility.iHack	= 5;
@@ -132,11 +132,11 @@ void CPlayer::Initialize()
 	m_tColInfo.fCY = 30.f;
 
 	/*이동속도*/
-	m_fSpeed = 2.5f;
+	m_fSpeed	= 2.5f;
 
 	/*스킬&공격 방향*/
-	fAttLen = 60.f;
-	m_fAngle = 270.f;
+	fAttLen		= 60.f;
+	m_fAngle	= 270.f;
 
 	m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 	m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
@@ -154,9 +154,9 @@ void CPlayer::LateInit()
 	m_pEquipment	 = CObjMgr::GetInstance()->GetEquipment();
 
 	/*인벤토리에 장비창 전달*/
-	dynamic_cast<CInventory*>(m_pInventory)->SetEquipment(CObjMgr::GetInstance()->GetEquipment());
+	static_cast<CInventory*>(m_pInventory)->SetEquipment(CObjMgr::GetInstance()->GetEquipment());
 	/*장비창에 인벤토리 전달*/
-	dynamic_cast<CEquipment*>(m_pEquipment)->SetInventory(CObjMgr::GetInstance()->GetInventory());
+	static_cast<CEquipment*>(m_pEquipment)->SetInventory(CObjMgr::GetInstance()->GetInventory());
 
 	/*Ui Button 생성*/
 	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CStateButton>::CreateObj(790.f, 30.f), ObjID::UI_BUTTON);
@@ -174,6 +174,7 @@ void CPlayer::LateInit()
 int CPlayer::Update()
 {
 	CObj::LateInit();
+
 	if (m_bIsDead)
 		return DEAD_OBJ;
 
@@ -186,463 +187,75 @@ int CPlayer::Update()
 		m_tInfo.iSp = 1;
 	}
 	
-	/*달리기, 걷기 전환*/
-	if (KEY_DOWN('R'))
-	{
-		m_bIsRunning = !m_bIsRunning;
-		m_iMoveState = (m_iMoveState + 1) % 2;
-	}
-	if (m_bIsRunning == false)
-	{
-		++m_tInfo.iSp;
+	// Player Key Input.
+	KeyInput();
 
-		if (m_tInfo.iSp > m_tInfo.iMaxSp)
-			m_tInfo.iSp = m_tInfo.iMaxSp;
-	}
-	if (m_tInfo.iSp <= 0)
-	{
-		m_tInfo.iSp = 0;
-		m_bIsRunning = false;
-		m_iMoveState = (m_iMoveState + 1) % 2;
-	}
 
-	/*플레이어 이동 RUN*/
-	if (KEY_PRESSING('A'))
-	{
-		/*공격 방향 설정*/
-		m_fAngle = 180.f;
-		/*이미지박스 & 충돌박스 같이 이동.*/
-		if (KEY_PRESSING('W'))
-		{	/*공격 방향 설정*/
-			m_fAngle = 240.f;
-			if (m_bIsRunning)
-			{	//달리기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_LeftUp_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{	//걷기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_LeftUp_";
-				m_eCurStance = WALK;
-			}
-		}
-		else if (KEY_PRESSING('D'))
-		{
-			/*공격 방향 설정*/
-			m_fAngle = 125.f;
-			if (m_bIsRunning)
-			{	//달리기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_LeftDown_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{	//걷기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_LeftDown_";
-				m_eCurStance = WALK;
-			}
-		}
-		else
-		{/*좌 이동*/
-			if (m_bIsRunning)
-			{	//달리기
-				m_tInfo.fX -= m_fSpeed;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_Left_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{	//걷기
-				m_tInfo.fX -= m_fSpeed / 2;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_Left_";
-				m_eCurStance = WALK;
-			}
-		}
-	}
-	else if (KEY_PRESSING('D'))
-	{
-		/*공격 방향 설정*/
-		m_fAngle = 360.f;
-		if (KEY_PRESSING('W'))		/*우상단*/
-		{	
-			/*공격 방향 설정*/
-			m_fAngle = 300.f;
-
-			if (m_bIsRunning)			//달리기
-			{	/*이미지 박스*/
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
-				/*충돌 박스*/
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_RightUp_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{							//걷기
-				/*이미지 박스*/
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
-				/*충돌 박스*/
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_RightUp_";
-				m_eCurStance = WALK;
-			}
-		}
-		else if (KEY_PRESSING('S')) /*우하단*/
-		{
-			/*공격 방향 설정*/
-			m_fAngle = 55.f;
-
-			if (m_bIsRunning)
-			{	//달리기
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_RightDown_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{	//걷기
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_RightDown_";
-				m_eCurStance = WALK;
-			}
-		}
-		else
-		{	//달리기
-			if (m_bIsRunning)
-			{	/*우 이동*/
-				m_tInfo.fX += m_fSpeed;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_Right_";
-				m_eCurStance = RUN;
-
-				--m_tInfo.iSp;
-			}
-			else
-			{//걷기
-				m_tInfo.fX += m_fSpeed / 2;
-				CObj::UpdateColXYPos();
-
-				m_pFrameKey = L"Player_Right_";
-				m_eCurStance = WALK;
-			}
-		}
-	}
-	else if (KEY_PRESSING('W'))	/*상단 이동*/
-	{
-		/*공격 방향 설정*/
-		m_fAngle = 270.f;
-		if (m_bIsRunning)
-		{	//달리기
-			m_tInfo.fY -= m_fSpeed;
-			CObj::UpdateColXYPos();
-
-			m_pFrameKey = L"Player_Up_";
-			m_eCurStance = RUN;
-
-			--m_tInfo.iSp;
-		}
-		else
-		{	//걷기
-			m_tInfo.fY -= m_fSpeed / 2;
-			CObj::UpdateColXYPos();
-
-			m_pFrameKey = L"Player_Up_";
-			m_eCurStance = WALK;
-		}
-
-	}
-	else if (KEY_PRESSING('S'))	/*하단 이동*/
-	{
-		/*공격 방향 설정*/
-		m_fAngle = 90.f;
-		if (m_bIsRunning)
-		{	//달리기
-			m_tInfo.fY += m_fSpeed;
-			CObj::UpdateColXYPos();
-
-			m_pFrameKey = L"Player_Down_";
-			m_eCurStance = RUN;
-
-			--m_tInfo.iSp;
-		}
-		else
-		{	//걷기
-			m_tInfo.fY += m_fSpeed / 2;
-			CObj::UpdateColXYPos();
-
-			m_pFrameKey = L"Player_Down_";
-			m_eCurStance = WALK;
-		}
-	}
-	else if(KEY_UP('A'))
-		m_eCurStance = IDLE;
-	else if (KEY_UP('D'))
-		m_eCurStance = IDLE;
-	else if (KEY_UP('W'))
-		m_eCurStance = IDLE;
-	else if (KEY_UP('S'))
-		m_eCurStance = IDLE;
-
-
-	/*기본 공격*/
-	else if (KEY_DOWN(VK_SPACE) /*|| KEY_DOWN(VK_LBUTTON)*/)
-	{
-		CSoundMgr::GetInstance()->PlaySound(L"pAttack.wav", CSoundMgr::PLAYER_ATTACK);
-
-
-		m_bIsAttack = true;
-		m_eCurStance = ATTACK;
-
-		CObj::UpdateColXYPos();
-		m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
-		m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
-
-		CObjMgr::GetInstance()->AddObject(CreateSkill<CSkill>(), ObjID::SKILL);
-	}
-
-	/*스킬 공격*/
-	else if (KEY_DOWN(VK_F1))
-	{
-		m_eSkill = MOON;
-		dynamic_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(0);
-	}
-	/*스킬 공격*/
-	else if (KEY_DOWN(VK_F2))
-	{
-		m_eSkill = SOUL;
-		dynamic_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(1);
-	}
-	/*스킬 공격*/
-	else if (KEY_DOWN(VK_F3))
-	{
-		m_eSkill = MULTI;
-		dynamic_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(4);
-	}
-
-	/*스킬 공격*/
-	else if (KEY_DOWN(VK_RBUTTON))
-	{	
-
-		if (m_iComboCnt > 0)
-		{
-			/*콤보 카운트 0보다 큰 상태이면*/
-			if (iComboAttackTime < COMBO_TIME)
-			{
-				/*콤보어택 제한시간을 넘지 않았으면.*/
-				m_bIsCombo = true;
-				/*콤보어택에 성공 했으면 제한시간 초기화.*/
-				iComboAttackTime = 0;
-
-				++m_iComboCnt;
-
-				/*콤보박스 좌표 & 콤보카운팅 업데이트*/
-				dynamic_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
-				dynamic_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
-
-				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CComboCnt>::CreateComCnt(m_tInfo.fX - 30.f, m_tInfo.fY - 90.f, m_iComboCnt), ObjID::EFFECT);
-
-			}
-		}
-
-		m_bIsSkill = true;
-		m_eCurStance = SKILL;
-
-		CObj::UpdateColXYPos();
-
-		m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
-		m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
-
-		if (m_tInfo.iMp > 100)
-		{
-			CSoundMgr::GetInstance()->PlaySound(L"SKILL.wav", CSoundMgr::PLAYER_SKILL);
-
-			switch (m_eSkill)
-			{
-			case SOUL:
-				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillSoul>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
-				break;
-			case MOON:
-				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillMoon>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
-				break;
-			case MULTI:
-				CObjMgr::GetInstance()->AddObject(CreateSkill<CMultiAttack>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
-				break;
-			}
-		}
-		else
-			CSoundMgr::GetInstance()->PlaySound(L"NoMana.wav", CSoundMgr::PLAYER_SKILL);
-
-
-	}
-	/*물약 사용*/
-	else if (KEY_DOWN(VK_F5))
-	{
-		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
-
-		m_tInfo.iHp += (int)(m_tInfo.iMaxHp*0.1f);
-
-		if (m_tInfo.iHp > m_tInfo.iMaxHp)
-			m_tInfo.iHp = m_tInfo.iMaxHp;
-
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
-			ObjID::EFFECT);
-	}
-	else if (KEY_DOWN(VK_F6))
-	{
-		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
-
-		m_tInfo.iSp += (int)(m_tInfo.iMaxSp*0.1f);
-
-		if (m_tInfo.iSp > m_tInfo.iMaxSp)
-			m_tInfo.iSp = m_tInfo.iMaxSp;
-
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
-			ObjID::EFFECT);
-	}
-	else if (KEY_DOWN(VK_F7))
-	{
-		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
-
-		m_tInfo.iMp += (int)(m_tInfo.iMaxMp*0.1f);
-
-		if (m_tInfo.iMp > m_tInfo.iMaxMp)
-			m_tInfo.iMp = m_tInfo.iMaxMp;
-
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
-			ObjID::EFFECT);
-	}
-	else if (KEY_DOWN('P'))	/*Player Info*/
-	{
-		m_bIsInfoUi = !m_bIsInfoUi;
-		dynamic_cast<CPlayerInfo*>(m_pPlayerInfo)->SetbIsInfoOn(m_bIsInfoUi);
-
-		if (m_bIsInfoUi == true)
-			dynamic_cast<CStateButton*>(m_pStateButton)->SetDrawKey(1);
-		else
-			dynamic_cast<CStateButton*>(m_pStateButton)->SetDrawKey(0);
-	}
-	else if (KEY_DOWN('I'))	/*Player Inventory*/
-	{
-		m_bIsInvenUi = !m_bIsInvenUi;
-		dynamic_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(m_bIsInvenUi);
-
-		if (m_bIsInvenUi == true)
-			dynamic_cast<CInvenButton*>(m_pInvenButton)->SetDrawKey(1);
-		else
-			dynamic_cast<CInvenButton*>(m_pInvenButton)->SetDrawKey(0);
-
-			
-	}
-	else if (KEY_DOWN('E'))	/*Player Equipment*/
-	{
-		m_bIsEquipUi = !m_bIsEquipUi;
-		dynamic_cast<CEquipment*>(m_pEquipment)->SetbIsEquipOn(m_bIsEquipUi);
-
-		if (m_bIsEquipUi == true)
-			dynamic_cast<CEquipButton*>(m_pEquipButton)->SetDrawKey(1);
-		else
-			dynamic_cast<CEquipButton*>(m_pEquipButton)->SetDrawKey(0);
-
-	}
-
-	/*공격 상태 유지 시간.*/
+	/*__________________________________________________________________________________________________________
+	[ 기본 공격 상태 유지시간 체크 ]
+	____________________________________________________________________________________________________________*/
 	if (m_bIsAttack)
 	{
 		m_eCurStance = ATTACK;
 		
 		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
 		{	
-			m_iComboCnt += 1;	//콤보 카운트 1증가.
+			//콤보 카운트 1증가.
+			m_iComboCnt += 1;
 			if (m_iComboCnt > 1)
 			{
 				m_bIsCombo = true;
-				/*콤보박스 좌표 & 콤보카운팅 업데이트*/
-				dynamic_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
-				dynamic_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
+				// 콤보박스 좌표 & 콤보카운팅 업데이트.
+				static_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
+				static_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
 
 				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CComboCnt>::CreateComCnt(m_tInfo.fX - 30.f, m_tInfo.fY - 90.f, m_iComboCnt), ObjID::EFFECT);
 
 			}
 
-			/*공격 상태 끝나면 다시 IDLE 상태로.*/
+			// 공격 상태 끝나면 다시 IDLE 상태로.
 			m_bIsAttack = false;
 			m_eCurStance = IDLE;
 		}
 	}
 
-	/*스킬 상태 유지 시간.*/
+	/*__________________________________________________________________________________________________________
+	[ 스킬 공격 상태 유지시간 체크. ]
+	____________________________________________________________________________________________________________*/
 	if (m_bIsSkill)
 	{
 		m_eCurStance = SKILL;
 
 		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
 		{	
-			/*스킬 상태 끝나면 다시 IDLE 상태로.*/
+			// 스킬 상태 끝나면 다시 IDLE 상태로.
 			m_bIsSkill = false;
 			m_eCurStance = IDLE;
 		}
 	}
-	/*피격 상태 유지 시간*/
+
+	// 피격 상태 유지 시간.
 	if (m_bIsHit)
 	{
 		m_eCurStance = HIT;
 		iHitTime += 5;
 
 		if (iHitTime > 30)
-		{	/*스킬 상태 끝나면 다시 IDLE 상태로.*/
+		{	
+			// 스킬 상태 끝나면 다시 IDLE 상태로.
 			m_bIsHit = false;
 			m_eCurStance = IDLE;
 			iHitTime = 0;
 		}
 	}
 
-
-	/*만약 콤보 상태이면*/
+	// 만약 콤보 상태이면.
 	if (m_bIsCombo)
 	{
-		++iComboAttackTime;	//콤보 제한 시간 카운팅.
+		//콤보 제한 시간 카운팅.
+		++iComboAttackTime;
 
-		/*프레임 스피드 빨라짐.*/
+		// 프레임 스피드 빨라짐.
 		switch (m_eCurStance)
 		{
 		case ATTACK:
@@ -655,10 +268,10 @@ int CPlayer::Update()
 	}
 	else
 	{
-		/*콤보 유지 시간도 초기화.*/
+		// 콤보 유지 시간도 초기화.
 		iComboAttackTime = 0;
 
-		/*프레임 스피드 원래대로*/
+		// 프레임 스피드 원래대로.
 		switch (m_eCurStance)
 		{
 		case ATTACK:
@@ -672,20 +285,22 @@ int CPlayer::Update()
 
 	if(iComboAttackTime > COMBO_TIME)
 	{
-		m_bIsCombo = false;
-		iComboAttackTime = 0;
-		/*콤보 카운터 다시 0으로.*/
+		m_bIsCombo			= false;
+		iComboAttackTime	= 0;
+
+		// 콤보 카운터 다시 0으로.
 		m_iComboCnt = 0;
 
-		/*콤보박스 업데이트.*/
-		dynamic_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
-		dynamic_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
+		// 콤보박스 업데이트.
+		static_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
+		static_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
 	}
 
 	m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 	m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
 	
 	return NO_EVENT;
+
 }
 
 void CPlayer::LateUpdate()
@@ -816,6 +431,451 @@ void CPlayer::Release()
 
 }
 
+void CPlayer::KeyInput()
+{
+	/*__________________________________________________________________________________________________________
+	[ Change RUN / WALK ]
+	____________________________________________________________________________________________________________*/
+	if (KEY_DOWN('R'))
+	{
+		m_bIsRunning = !m_bIsRunning;
+		m_iMoveState = (m_iMoveState + 1) % 2;
+	}
+	if (m_bIsRunning == false)
+	{
+		++m_tInfo.iSp;
+
+		if (m_tInfo.iSp > m_tInfo.iMaxSp)
+			m_tInfo.iSp = m_tInfo.iMaxSp;
+	}
+	if (m_tInfo.iSp <= 0)
+	{
+		m_tInfo.iSp = 0;
+		m_bIsRunning = false;
+		m_iMoveState = (m_iMoveState + 1) % 2;
+	}
+
+	/*__________________________________________________________________________________________________________
+	[ Player Move - RUN ]
+	____________________________________________________________________________________________________________*/
+	if (KEY_PRESSING('A'))
+	{
+		// 공격 방향 설정
+		m_fAngle = 180.f;
+
+		// 이미지박스 & 충돌박스 같이 이동.
+		if (KEY_PRESSING('W'))
+		{	
+			// 공격 방향 설정
+			m_fAngle = 240.f;
+
+			if (m_bIsRunning)
+			{	
+				//달리기
+				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
+				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_LeftUp_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{	
+				//걷기
+				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
+				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_LeftUp_";
+				m_eCurStance = WALK;
+			}
+		}
+		else if (KEY_PRESSING('D'))
+		{
+			// 공격 방향 설정
+			m_fAngle = 125.f;
+
+			if (m_bIsRunning)
+			{	
+				//달리기
+				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
+				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_LeftDown_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{	
+				//걷기
+				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
+				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_LeftDown_";
+				m_eCurStance = WALK;
+			}
+		}
+		else
+		{
+			// 좌 이동
+			if (m_bIsRunning)
+			{	
+				// 달리기
+				m_tInfo.fX -= m_fSpeed;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_Left_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{	
+				// 걷기
+				m_tInfo.fX -= m_fSpeed / 2;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_Left_";
+				m_eCurStance = WALK;
+			}
+		}
+	}
+	else if (KEY_PRESSING('D'))
+	{
+		// 공격 방향 설정
+		m_fAngle = 360.f;
+		if (KEY_PRESSING('W'))
+		{	
+			// 공격 방향 설정
+			m_fAngle = 300.f;
+
+			if (m_bIsRunning) //달리기
+			{	
+				// 이미지 박스
+				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
+				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
+
+				// 충돌 박스
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_RightUp_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{	
+				//걷기
+				// 이미지 박스
+				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
+				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
+				
+				// 충돌 박스
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_RightUp_";
+				m_eCurStance = WALK;
+			}
+		}
+		else if (KEY_PRESSING('S'))
+		{
+			// 공격 방향 설정
+			m_fAngle = 55.f;
+
+			if (m_bIsRunning)
+			{	
+				//달리기
+				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
+				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_RightDown_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{	
+				//걷기
+				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
+				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_RightDown_";
+				m_eCurStance = WALK;
+			}
+		}
+		else
+		{	
+			//달리기
+			if (m_bIsRunning)
+			{	
+				// 우 이동
+				m_tInfo.fX += m_fSpeed;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_Right_";
+				m_eCurStance = RUN;
+
+				--m_tInfo.iSp;
+			}
+			else
+			{ 
+				//걷기
+				m_tInfo.fX += m_fSpeed / 2;
+				CObj::UpdateColXYPos();
+
+				m_pFrameKey = L"Player_Right_";
+				m_eCurStance = WALK;
+			}
+		}
+	}
+	else if (KEY_PRESSING('W'))
+	{
+		// 공격 방향 설정
+		m_fAngle = 270.f;
+		if (m_bIsRunning)
+		{	
+			//달리기
+			m_tInfo.fY -= m_fSpeed;
+			CObj::UpdateColXYPos();
+
+			m_pFrameKey = L"Player_Up_";
+			m_eCurStance = RUN;
+
+			--m_tInfo.iSp;
+		}
+		else
+		{	
+			//걷기
+			m_tInfo.fY -= m_fSpeed / 2;
+			CObj::UpdateColXYPos();
+
+			m_pFrameKey = L"Player_Up_";
+			m_eCurStance = WALK;
+		}
+
+	}
+	else if (KEY_PRESSING('S'))
+	{
+		// 공격 방향 설정
+		m_fAngle = 90.f;
+		if (m_bIsRunning)
+		{	
+			//달리기
+			m_tInfo.fY += m_fSpeed;
+			CObj::UpdateColXYPos();
+
+			m_pFrameKey = L"Player_Down_";
+			m_eCurStance = RUN;
+
+			--m_tInfo.iSp;
+		}
+		else
+		{	
+			//걷기
+			m_tInfo.fY += m_fSpeed / 2;
+			CObj::UpdateColXYPos();
+
+			m_pFrameKey = L"Player_Down_";
+			m_eCurStance = WALK;
+		}
+	}
+	else if(KEY_UP('A'))
+		m_eCurStance = IDLE;
+	else if (KEY_UP('D'))
+		m_eCurStance = IDLE;
+	else if (KEY_UP('W'))
+		m_eCurStance = IDLE;
+	else if (KEY_UP('S'))
+		m_eCurStance = IDLE;
+
+
+
+	/*__________________________________________________________________________________________________________
+	[ Player Basic Attack ]
+	____________________________________________________________________________________________________________*/
+	else if (KEY_DOWN(VK_SPACE) /*|| KEY_DOWN(VK_LBUTTON)*/)
+	{
+		CSoundMgr::GetInstance()->PlaySound(L"pAttack.wav", CSoundMgr::PLAYER_ATTACK);
+
+
+		m_bIsAttack = true;
+		m_eCurStance = ATTACK;
+
+		CObj::UpdateColXYPos();
+		m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
+		m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
+
+		CObjMgr::GetInstance()->AddObject(CreateSkill<CSkill>(), ObjID::SKILL);
+	}
+
+	// 스킬 공격 등록
+	else if (KEY_DOWN(VK_F1))
+	{
+		m_eSkill = MOON;
+		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(0);
+	}
+	else if (KEY_DOWN(VK_F2))
+	{
+		m_eSkill = SOUL;
+		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(1);
+	}
+	else if (KEY_DOWN(VK_F3))
+	{
+		m_eSkill = MULTI;
+		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(4);
+	}
+
+	// 스킬 공격
+	else if (KEY_DOWN(VK_RBUTTON))
+	{	
+		if (m_iComboCnt > 0)
+		{
+			// 콤보 카운트 0보다 큰 상태이면
+			if (iComboAttackTime < COMBO_TIME)
+			{
+				// 콤보어택 제한시간을 넘지 않았으면.
+				m_bIsCombo = true;
+				
+				// 콤보어택에 성공 했으면 제한시간 초기화.
+				iComboAttackTime = 0;
+
+				++m_iComboCnt;
+
+				// 콤보박스 좌표 & 콤보카운팅 업데이트.
+				static_cast<CComboAttack*>(m_pComboBox)->UpdateComboCnt(m_iComboCnt);
+				static_cast<CComboAttack*>(m_pComboBox)->SetbIsCombo(m_bIsCombo);
+
+				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CComboCnt>::CreateComCnt(m_tInfo.fX - 30.f, m_tInfo.fY - 90.f, m_iComboCnt), ObjID::EFFECT);
+			}
+		}
+
+		m_bIsSkill		= true;
+		m_eCurStance	= SKILL;
+
+		CObj::UpdateColXYPos();
+
+		m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
+		m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
+
+		// MP가 100 이상일 때만 스칼 사용 가능.
+		if (m_tInfo.iMp > 100)
+		{
+			CSoundMgr::GetInstance()->PlaySound(L"SKILL.wav", CSoundMgr::PLAYER_SKILL);
+
+			switch (m_eSkill)
+			{
+			case SOUL:
+				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillSoul>(), ObjID::SKILL);
+				m_tInfo.iMp -= 100;
+				break;
+			case MOON:
+				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillMoon>(), ObjID::SKILL);
+				m_tInfo.iMp -= 100;
+				break;
+			case MULTI:
+				CObjMgr::GetInstance()->AddObject(CreateSkill<CMultiAttack>(), ObjID::SKILL);
+				m_tInfo.iMp -= 100;
+				break;
+			}
+		}
+		else
+			CSoundMgr::GetInstance()->PlaySound(L"NoMana.wav", CSoundMgr::PLAYER_SKILL);
+
+
+	}
+
+
+	/*__________________________________________________________________________________________________________
+	[ Use Potion. ]
+	____________________________________________________________________________________________________________*/
+	else if (KEY_DOWN(VK_F5))
+	{
+		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
+
+		m_tInfo.iHp += (int)(m_tInfo.iMaxHp*0.1f);
+
+		if (m_tInfo.iHp > m_tInfo.iMaxHp)
+			m_tInfo.iHp = m_tInfo.iMaxHp;
+
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
+			ObjID::EFFECT);
+	}
+	else if (KEY_DOWN(VK_F6))
+	{
+		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
+
+		m_tInfo.iSp += (int)(m_tInfo.iMaxSp*0.1f);
+
+		if (m_tInfo.iSp > m_tInfo.iMaxSp)
+			m_tInfo.iSp = m_tInfo.iMaxSp;
+
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
+			ObjID::EFFECT);
+	}
+	else if (KEY_DOWN(VK_F7))
+	{
+		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
+
+		m_tInfo.iMp += (int)(m_tInfo.iMaxMp*0.1f);
+
+		if (m_tInfo.iMp > m_tInfo.iMaxMp)
+			m_tInfo.iMp = m_tInfo.iMaxMp;
+
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
+			ObjID::EFFECT);
+	}
+
+	/*__________________________________________________________________________________________________________
+	[ Show Player's UI ]
+	____________________________________________________________________________________________________________*/
+	// Player Info.
+	else if (KEY_DOWN('P'))
+	{
+		m_bIsInfoUi = !m_bIsInfoUi;
+		static_cast<CPlayerInfo*>(m_pPlayerInfo)->SetbIsInfoOn(m_bIsInfoUi);
+
+		if (m_bIsInfoUi == true)
+			static_cast<CStateButton*>(m_pStateButton)->SetDrawKey(1);
+		else
+			static_cast<CStateButton*>(m_pStateButton)->SetDrawKey(0);
+	}
+
+	// Player Inventory.
+	else if (KEY_DOWN('I'))
+	{
+		m_bIsInvenUi = !m_bIsInvenUi;
+		static_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(m_bIsInvenUi);
+
+		if (m_bIsInvenUi == true)
+			static_cast<CInvenButton*>(m_pInvenButton)->SetDrawKey(1);
+		else
+			static_cast<CInvenButton*>(m_pInvenButton)->SetDrawKey(0);
+
+			
+	}
+
+	// Player Equipment.
+	else if (KEY_DOWN('E'))
+	{
+		m_bIsEquipUi = !m_bIsEquipUi;
+		static_cast<CEquipment*>(m_pEquipment)->SetbIsEquipOn(m_bIsEquipUi);
+
+		if (m_bIsEquipUi == true)
+			static_cast<CEquipButton*>(m_pEquipButton)->SetDrawKey(1);
+		else
+			static_cast<CEquipButton*>(m_pEquipButton)->SetDrawKey(0);
+
+	}
+
+}
+
 void CPlayer::SceneChange()
 {
 	if (m_eCurStance != m_ePreStance)
@@ -823,46 +883,46 @@ void CPlayer::SceneChange()
 		switch (m_eCurStance)
 		{
 		case IDLE:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 4;
-			m_tFrame.iScene = 5;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 4;
+			m_tFrame.iScene			= 5;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case WALK:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 8;
-			m_tFrame.iScene = 6;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 8;
+			m_tFrame.iScene			= 6;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case RUN:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 9;
-			m_tFrame.iScene = 3;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 9;
+			m_tFrame.iScene			= 3;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case ATTACK:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 5;
-			m_tFrame.iScene = 0;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 5;
+			m_tFrame.iScene			= 0;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case SKILL:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 8;
-			m_tFrame.iScene = 2;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 8;
+			m_tFrame.iScene			= 2;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case HIT:
-			m_tFrame.iFrameStart = 1;
-			m_tFrame.iFrameEnd = 1;
-			m_tFrame.iScene = 1;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 200;
+			m_tFrame.iFrameStart	= 1;
+			m_tFrame.iFrameEnd		= 1;
+			m_tFrame.iScene			= 1;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 200;
 			break;
 		}
 

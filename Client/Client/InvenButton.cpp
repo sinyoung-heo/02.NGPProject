@@ -54,7 +54,7 @@ int CInvenButton::Update()
 
 			m_iDrawKey += 1;
 			m_bIsUiOn = !m_bIsUiOn;
-			dynamic_cast<CInventory*>(m_pPlayerInven)->SetbIsInvenOn(m_bIsUiOn);
+			static_cast<CInventory*>(m_pPlayerInven)->SetbIsInvenOn(m_bIsUiOn);
 		}
 
 		m_sound = true;
