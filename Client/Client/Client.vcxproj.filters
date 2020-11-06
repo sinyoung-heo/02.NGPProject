@@ -444,6 +444,9 @@
     <ClInclude Include="MyBmp.h">
       <Filter>97.Manager\BmpMgr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Server\Server\Protocol.h">
+      <Filter>98.Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">

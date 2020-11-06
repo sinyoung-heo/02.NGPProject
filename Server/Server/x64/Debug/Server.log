@@ -1,0 +1,3 @@
+﻿  Server.cpp
+C:\Users\user\Desktop\02.NGPProject\Server\Server\Server.cpp(87,67): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  Server.vcxproj -> C:\Users\user\Desktop\02.NGPProject\Server\x64\Debug\Server.exe

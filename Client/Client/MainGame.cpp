@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "MainGame.h"
 #include "Player.h"
+#include "../Protocol.h"
+using namespace PROTOCOL;
 
 CMainGame::CMainGame()
 {
@@ -9,11 +11,19 @@ CMainGame::CMainGame()
 CMainGame::~CMainGame()
 {
 	Release();
+
+	/* 서버 종료 */
+	closesocket(g_hSocket);
+	WSACleanup();
 }
 
 void CMainGame::Initialize()
 {
 	m_hDC = GetDC(g_hWnd);
+
+	/* 서버 초기화 */
+	wcout.imbue(std::locale("korean"));
+	Ready_Server();
 
 	/*사운드*/
 	CSoundMgr::GetInstance()->Initialize();
@@ -122,4 +132,35 @@ void CMainGame::Release()
 	CSoundMgr::GetInstance()->DestroyInstance();
 
 	CObjMgr::GetInstance()->DestroyInstance();
+}
+
+void CMainGame::Ready_Server()
+{
+	// Initialize Windows Socket
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	// Create Windows Socket
+	g_hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (g_hSocket == INVALID_SOCKET)
+		err_quit("socket()");
+
+	SOCKADDR_IN sockAddr;
+	memset(&sockAddr, 0, sizeof(sockAddr));
+
+	sockAddr.sin_family = AF_INET;
+	sockAddr.sin_port = htons(PROTOCOL::SERVER_PORT);
+	sockAddr.sin_addr.s_addr = inet_addr(PROTOCOL::SERVER_IP);
+
+
+	if (connect(g_hSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) == SOCKET_ERROR)
+	{
+		err_quit("connect()");
+	}
+
+}
+
+void CMainGame::Connect_Server()
+{
 }

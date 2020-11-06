@@ -14,6 +14,9 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 
 HWND g_hWnd;
 
+// 해당 클라이언트 전역 소켓
+SOCKET g_hSocket;
+
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);

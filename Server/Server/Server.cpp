@@ -1,9 +1,11 @@
 #pragma comment(lib, "ws2_32")
 #include <WinSock2.h>
 #include <iostream>
-#include "Include.h"
+
+#include "Protocol.h"
 
 using namespace std;
+using namespace PROTOCOL;
 
 DWORD WINAPI ClientThread(LPVOID arg);
 int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum);

@@ -16,4 +16,3 @@ bool LessY(T pDst, T pSrc)
 {
 	return pDst->GetInfo().fY < pSrc->GetInfo().fY;
 }
-

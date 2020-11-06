@@ -11,16 +11,18 @@
 // Windows 헤더 파일:
 #include <windows.h>
 
+// Windows Socket 헤더 파일
+#pragma comment(lib, "ws2_32")
+#include <WinSock2.h>
+
 // C 런타임 헤더 파일입니다.
-#include <stdlib.h>
-#include <malloc.h>
+#include <iostream>
 #include <memory.h>
 #include <tchar.h>
 #include <vector>
 #include <list>
 #include <map>
 #include <algorithm>
-#include <iostream>
 #include <ctime>
 #include <io.h>
 
@@ -28,13 +30,9 @@ using namespace std;
 
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.
 
-#include <Vfw.h>
-#pragma comment(lib, "vfw32.lib")
-
 /* FMOD */
 #include "fmod.h"
 #pragma comment(lib, "fmodex_vc.lib")
-
 
 #include "Define.h"
 #include "Enum.h"
