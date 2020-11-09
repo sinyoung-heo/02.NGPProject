@@ -29,4 +29,60 @@ namespace PROTOCOL
         printf("[%s] %s", msg, (char*)lpMsgBuf);
         LocalFree(lpMsgBuf);
     }
+
+    typedef struct sv_send
+    {
+        bool is_connected;
+        float cx;
+        float cy;
+        float x;
+        float y;
+        char name[64];
+        int level;
+        int hp;
+        int mp;
+        int sp;
+        int att;
+        float speed;
+        int exp;
+
+        int stance;
+        int skill;
+
+        int dir;
+    }SV_SEND;
+
+    typedef struct sv_recv
+    {
+        bool is_connected;
+        char input;
+    }SV_RECV;
+
+    typedef struct cl_recv
+    {
+        bool is_connected;
+        float cx;
+        float cy;
+        float x;
+        float y;
+        char name[64];
+        int level;
+        int hp;
+        int mp;
+        int sp;
+        int att;
+        float speed;
+        int exp;
+
+        int stance;
+        int skill;
+
+        int dir;
+    }CL_RECV;
+
+    typedef struct cl_send
+    {
+        bool is_connected;
+        char input;
+    }CL_SEND;
 }
