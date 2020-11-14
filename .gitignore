@@ -46,3 +46,5 @@
 *.log
 *.obj
 *.tlog
+/Server/x64
+/Server/Server/x64
