@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainGame.h"
 #include "Player.h"
+
 #include "../Protocol.h"
 using namespace PROTOCOL;
 
@@ -25,6 +26,7 @@ void CMainGame::Initialize()
 	wcout.imbue(std::locale("korean"));
 	Ready_Server();
 
+#pragma region READY_MAINAPP_RESOURCE
 	/*사운드*/
 	CSoundMgr::GetInstance()->Initialize();
 
@@ -78,11 +80,12 @@ void CMainGame::Initialize()
 	/*Potal*/
 	CBmpMgr::GetInstance()->InsertBmp(L"Portal", L"../Image/Effect/Portal.bmp");
 	CBmpMgr::GetInstance()->InsertBmp(L"Portal2", L"../Image/Effect/Portal2.bmp");
-
+#pragma endregion
 
 	/*마우스 매니저 초기화.*/
 	CMouseMgr::GetInstance()->Initialize();
 	ShowCursor(false);
+
 	/*첫 화면 LOGO로 초기화.*/
 	CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_LOGO);
 }

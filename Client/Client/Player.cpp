@@ -39,6 +39,7 @@ CPlayer::~CPlayer()
 
 void CPlayer::Initialize()
 {
+#pragma region READY_PLAYER_RESOURCE
 	/*Player 비트맵*/
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_Down_", L"../Image/Player/Player_Down_.bmp");
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_Left_", L"../Image/Player/Player_Left_.bmp");
@@ -66,7 +67,7 @@ void CPlayer::Initialize()
 	/*Potion Effect*/
 	CBmpMgr::GetInstance()->InsertBmp(L"HpPotion", L"../Image/Effect/HpPotion.bmp");
 	CBmpMgr::GetInstance()->InsertBmp(L"MpPotion", L"../Image/Effect/MpPotion.bmp");
-
+#pragma endregion
 
 	/*스킬 아이콘 PushBack*/
 	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillIcon>::CreateObj(64.f, 81.f), ObjID::UI);
@@ -76,8 +77,8 @@ void CPlayer::Initialize()
 
 	///*Player Info PushBack*/
 	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CPlayerInfo>::CreateObj(450.f, 10.f), ObjID::UI);
-
-
+	
+	
 
 	/*애니메이션 변수 IDLE 상태로 초기화.*/
 	m_pFrameKey = L"Player_Down_";
@@ -177,16 +178,64 @@ int CPlayer::Update()
 
 	if (m_bIsDead)
 		return DEAD_OBJ;
-
-	if (KEY_DOWN('L'))
-		m_tInfo.iExp += 1000;
-	if (KEY_DOWN('Q'))
-	{
-		m_tInfo.iHp = 1;
-		m_tInfo.iMp = 1;
-		m_tInfo.iSp = 1;
-	}
 	
+	/*__________________________________________________________________________________________________________
+	[ Data Send ] :: Client ----> Server
+	____________________________________________________________________________________________________________*/
+	int		retval			= 0;
+	char*	szSendData		= "Client::SendData";
+	int		iSendDatalen	= strlen(szSendData);
+
+	// Send Data. (고정 길이)
+	retval = send(g_hSocket,			// 통신할 대상과 연결된 소켓.
+				  (char*)&iSendDatalen,	// 보낼 데이터를 담고 있는 버퍼 주소.
+				  sizeof(int),			// 보낼 데이터 크기.
+				  0);
+	if (retval == SOCKET_ERROR)
+		return NO_EVENT;
+
+	// Send Data. (가변 길이)
+	retval = send(g_hSocket,	 // 통신할 대상과 연결된 소켓.
+				  szSendData,	 // 보낼 데이터를 담고 있는 버퍼 주소.
+				  iSendDatalen,	 // 보낼 데이터 크기.
+				  0);
+
+	cout << "Client Send : " << szSendData << endl;
+
+
+	/*__________________________________________________________________________________________________________
+	[ Data Recv ] :: Client <---- Server
+	____________________________________________________________________________________________________________*/
+	char* szRecvBuf{ nullptr };
+	int   iRecvDataLen{ 0 };
+
+	// Data Recv. (고정 길이)
+	retval = ReceiveData(g_hSocket,
+						 (char*)&iRecvDataLen,
+						 sizeof(int),
+						 0);
+	if (retval == SOCKET_ERROR)
+		return NO_EVENT;
+
+	// Data Recv. (가변 길이)
+	szRecvBuf = new char[iRecvDataLen + 1];
+	retval = ReceiveData(g_hSocket,
+						 szRecvBuf,
+						 iRecvDataLen,
+						 0);
+	if (retval == SOCKET_ERROR)
+		return NO_EVENT;
+
+	szRecvBuf[retval] = '\0';
+
+	cout << "Client Recv : "  << szRecvBuf << endl;
+
+	if (szRecvBuf)
+	{
+		delete[] szRecvBuf;
+		szRecvBuf = nullptr;
+	}
+
 	// Player Key Input.
 	KeyInput();
 
@@ -433,6 +482,9 @@ void CPlayer::Release()
 
 void CPlayer::KeyInput()
 {
+	if (KEY_DOWN('L'))
+		m_tInfo.iExp += 1000;
+
 	/*__________________________________________________________________________________________________________
 	[ Change RUN / WALK ]
 	____________________________________________________________________________________________________________*/

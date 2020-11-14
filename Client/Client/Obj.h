@@ -60,6 +60,10 @@ public:
 	void MoveFrame();
 
 protected:
+	// Server Data Receive.
+	int ReceiveData(SOCKET s, char* buf, int len, int flags);
+
+protected:
 	INFO m_tInfo;
 	RECT m_tRect;	//이미지 박스
 

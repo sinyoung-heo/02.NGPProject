@@ -111,8 +111,98 @@ int main(int argc, char* argv[])
 
 DWORD __stdcall ClientThread(LPVOID arg)
 {
+    int retval{ 0 };
+    
+    // 클라이언트 소켓.
+    SOCKET      pClientSocket{ (SOCKET)arg };
+    SOCKADDR_IN tClientAddr;
+    ZeroMemory(&tClientAddr, sizeof(SOCKADDR_IN));
+    int iAddrLen{ sizeof(tClientAddr) };
+
+    char*   szRecvBuf{ nullptr };
+    int     iRecvDataLen{ 0 };
+    int     iSendDataLen{ 0 };
+
+    while (true)
+    {
+        if (szRecvBuf)
+        {
+            delete[] szRecvBuf;
+            szRecvBuf = nullptr;
+        }
+
+        /*__________________________________________________________________________________________________________
+        [ Data Receive ] :: Server <---- Client
+        ____________________________________________________________________________________________________________*/
+        // Data Receive. (고정 길이)
+        retval = ReceiveData(pClientSocket,                   // 통신할 대상과 연결된 소켓.
+                             (char*)&iRecvDataLen,            // 받은 데이터를 저장할 버퍼의 주소.
+                             sizeof(int),                     // 수신 버퍼로부터 복사할 최대 데이터의 크기.
+                             0,
+                             ntohs(tClientAddr.sin_port));    // 클라이언트 포트번호.
+        if (SOCKET_ERROR == retval)
+        {
+            err_display("recv()");
+            break;
+        }
+        else if (0 == retval)
+            continue;
+
+        // Data Receive. (가변 길이)
+        szRecvBuf = new char[iRecvDataLen + 1];
+        retval = ReceiveData(pClientSocket,                   // 통신할 대상과 연결된 소켓.
+                             szRecvBuf,                       // 받은 데이터를 저장할 버퍼의 주소.
+                             iRecvDataLen,                    // 수신 버퍼로부터 복사할 최대 데이터의 크기.
+                             0,
+                             ntohs(tClientAddr.sin_port));    // 클라이언트 포트번호.
+        if (SOCKET_ERROR == retval)
+        {
+            err_display("recv()");
+            break;
+        }
+        else if (0 == retval)
+            continue;
+
+        // 데이터 사이즈를 초과하는 값을 읽어올 수 있으므로 데이터의 마지막은 확실하게 NULL처리.
+        szRecvBuf[retval] = '\0';
+
+        cout << "Server Recv : " << szRecvBuf << endl;
+
+        
+        /*__________________________________________________________________________________________________________
+        [ Data Send ] :: Server ----> Client
+        ____________________________________________________________________________________________________________*/
+        char* szSendBuf = "Server::SendData";
+        iSendDataLen = strlen(szSendBuf);
+
+        // Data Send (고정길이)
+        retval = send(pClientSocket,        // 통신할 대상과 연결된 소켓.
+                      (char*)&iSendDataLen, // 보낼 데이터를 담고 있는 버퍼 주소.
+                      sizeof(int),          // 보낼 데이터 크기.
+                      0);
+
+        // Data Send (가변길이)
+        retval = send(pClientSocket,        // 통신할 대상과 연결된 소켓.
+                      szSendBuf,            // 보낼 데이터를 담고 있는 버퍼 주소
+                      iSendDataLen,         // 보낼 데이터 크기.
+                      0);
+        if (retval == SOCKET_ERROR)
+        {
+            err_display("send()");
+            break;
+        }
+
+        cout << "Server Send : " << szSendBuf << endl;
 
 
+    }
+
+    // Close Socket
+    closesocket(pClientSocket);
+
+    // Print ClientInfo.
+    cout << "[TCP Server] Client Exit \t IP Address = " << inet_ntoa(tClientAddr.sin_addr)
+        << "\t Port Number = " << ntohs(tClientAddr.sin_port) << endl;
     return 0;
 }
 

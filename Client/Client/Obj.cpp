@@ -65,3 +65,29 @@ void CObj::MoveFrame()
 	if (m_tFrame.iFrameStart > m_tFrame.iFrameEnd)
 		m_tFrame.iFrameStart = 0;
 }
+
+int CObj::ReceiveData(SOCKET s, char* buf, int len, int flags)
+{
+	int     received    = 0;
+    char*   ptr         = buf;
+    int     left        = len;
+
+    while (left > 0)
+    {
+        received = recv(s,      // 통신할 대상과 연결된 소켓.
+                        ptr,    // 받은 데이터를 저장할 버퍼의 주소.
+                        left,   // 수신 버퍼로부터 복사할 최대 데이터의 크기.
+                        flags);
+
+        if (SOCKET_ERROR == received)
+            return SOCKET_ERROR;
+
+        else if (0 == received)
+            break;
+
+        left -= received;
+        ptr += received;
+    }
+
+    return (len - left);
+}
