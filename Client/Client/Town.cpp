@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Town.h"
 #include "Player.h"
+#include "COthers.h"
 #include "PotalDungeon.h"
 
 
@@ -29,6 +30,8 @@ void CTown::Initialize()
 	{
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CPlayer>::CreateObj(),
 			ObjID::PLAYER);
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<COthers>::CreateObj(),
+			ObjID::OTHERS);
 	}
 	CObjMgr::GetInstance()->SetPlayerPos(1005.f, 555.f);
 	CTileMgr::GetInstance()->LoadData(L"Town");

@@ -2,8 +2,7 @@
 #include "MainGame.h"
 #include "Player.h"
 
-#include "../Protocol.h"
-using namespace PROTOCOL;
+
 
 CMainGame::CMainGame()
 {
@@ -25,6 +24,7 @@ void CMainGame::Initialize()
 	/* 서버 초기화 */
 	wcout.imbue(std::locale("korean"));
 	Ready_Server();
+	Connect_Server();
 
 #pragma region READY_MAINAPP_RESOURCE
 	/*사운드*/
@@ -145,25 +145,78 @@ void CMainGame::Ready_Server()
 
 	// Create Windows Socket
 	g_hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	/* Non-Blocking Socket으로 전환 */
+	unsigned long ul = 1;
+	ioctlsocket(g_hSocket, FIONBIO, (unsigned long*)&ul);
 
 	if (g_hSocket == INVALID_SOCKET)
-		err_quit("socket()");
+	{
+		wchar_t temp[30] = L"Client Socket Create Failed";
+		LPCWSTR tempMsg = temp;
+		LPVOID	lpMsgBuf;
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+		MessageBox(NULL, (LPCTSTR)lpMsgBuf, tempMsg, MB_ICONERROR);
+		LocalFree(lpMsgBuf);
+		exit(1);
+	}
+}
 
+int CMainGame::Connect_Server()
+{
 	SOCKADDR_IN sockAddr;
 	memset(&sockAddr, 0, sizeof(sockAddr));
 
 	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons(PROTOCOL::SERVER_PORT);
-	sockAddr.sin_addr.s_addr = inet_addr(PROTOCOL::SERVER_IP);
+	sockAddr.sin_port = htons(PROTOCOL_TEST::SERVER_PORT);
+	sockAddr.sin_addr.s_addr = inet_addr(PROTOCOL_TEST::SERVER_IP);
 
 
 	if (connect(g_hSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) == SOCKET_ERROR)
 	{
-		err_quit("connect()");
+		int state = WSAGetLastError();
+		if (state != WSAEWOULDBLOCK)
+		{
+			WCHAR* h_mess;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL, WSAGetLastError(),
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPWSTR)&h_mess, 0, NULL);
+			cout << "WSAConnect";
+			wcout << L"에러 -> " << h_mess << endl;
+			while (true);
+			LocalFree(h_mess);
+
+			closesocket(g_hSocket);
+			return -1;
+		}
 	}
 
-}
+	cout << "서버에 접속을 요청하였습니다. 잠시만 기다려주세요." << endl;
 
-void CMainGame::Connect_Server()
-{
+	/* login_packet 서버로 보내기 */
+	cs_packet_login l_packet;
+	l_packet.size = sizeof(l_packet);
+	l_packet.type = CS_PACKET_LOGIN;
+	int t_id = GetCurrentProcessId();
+	sprintf_s(l_packet.name, "P%03d", t_id % 1000);
+	strcpy_s(g_szServerName, l_packet.name);
+
+	char* p = reinterpret_cast<char*>(&l_packet);
+
+	int iSendBytes = send(g_hSocket, p, p[0], 0);
+
+	if (iSendBytes == SOCKET_ERROR)
+	{
+		wchar_t temp[30] = L"Client Socket Send Failed";
+		LPCWSTR tempMsg = temp;
+		LPVOID	lpMsgBuf;
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+		MessageBox(NULL, (LPCTSTR)lpMsgBuf, tempMsg, MB_ICONERROR);
+		LocalFree(lpMsgBuf);
+		closesocket(g_hSocket);
+		exit(1);
+	}
+	cout << "Login packet 전송완료" << endl;
+
+	return NO_EVENT;
 }

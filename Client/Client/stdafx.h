@@ -22,6 +22,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <algorithm>
 #include <ctime>
 #include <io.h>
@@ -33,6 +34,9 @@ using namespace std;
 /* FMOD */
 #include "fmod.h"
 #pragma comment(lib, "fmodex_vc.lib")
+
+#include "../../Server/Server/Protocol.h"
+using namespace PROTOCOL_TEST;
 
 #include "Define.h"
 #include "Enum.h"

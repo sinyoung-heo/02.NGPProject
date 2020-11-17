@@ -162,6 +162,7 @@
     <ClInclude Include="CollisionMgr.h" />
     <ClInclude Include="ComboAttack.h" />
     <ClInclude Include="ComboCnt.h" />
+    <ClInclude Include="COthers.h" />
     <ClInclude Include="Cow.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="DmgBox.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="CollisionMgr.cpp" />
     <ClCompile Include="ComboAttack.cpp" />
     <ClCompile Include="ComboCnt.cpp" />
+    <ClCompile Include="COthers.cpp" />
     <ClCompile Include="Cow.cpp" />
     <ClCompile Include="DmgBox.cpp" />
     <ClCompile Include="Dungeon.cpp" />

@@ -205,6 +205,9 @@
     <Filter Include="97.Manager\SceneMgr\00.Edit">
       <UniqueIdentifier>{0365025c-05c6-4a1c-894a-009c7f481ac9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.GameObject\08.Others">
+      <UniqueIdentifier>{1347ba37-5c76-46ae-a3cb-a4c98043fbd7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -447,6 +450,9 @@
     <ClInclude Include="..\..\Server\Server\Protocol.h">
       <Filter>98.Header</Filter>
     </ClInclude>
+    <ClInclude Include="COthers.h">
+      <Filter>01.GameObject\08.Others</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -668,6 +674,9 @@
     </ClCompile>
     <ClCompile Include="MyBmp.cpp">
       <Filter>97.Manager\BmpMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="COthers.cpp">
+      <Filter>01.GameObject\08.Others</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
