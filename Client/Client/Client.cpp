@@ -13,9 +13,17 @@ WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
 HWND g_hWnd;
+bool g_bIsActive;
 
 // 해당 클라이언트 전역 소켓
 SOCKET g_hSocket;
+/* 클라이언트가 서버에 접속을 했을 때, 서버로부터 받는 ID */
+int g_iServerID=-1;
+/* 클라이언트가 서버에서 사용 할 NAME */
+char g_szServerName[64];
+/* 서버에 접속한 유저를 관리하는 컨테이너 */
+unordered_map<int, CObj*> g_umap_serverObj;
+
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -82,7 +90,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
             if (dwFPSTime + 1000 < GetTickCount())
             {
-                swprintf_s(szFPS, L"FPS: %d", iFPS);
+                //swprintf_s(szFPS, L"FPS: %d", iFPS);
+                swprintf_s(szFPS, L"ID: %d", g_iServerID);
 
                 SetWindowText(g_hWnd, szFPS);
 
@@ -182,6 +191,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         EndPaint(hWnd, &ps);
     }
     break;
+    case WM_ACTIVATE:
+        if (LOWORD(wParam) == WA_INACTIVE)
+            g_bIsActive = false;
+        else
+            g_bIsActive = true;
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

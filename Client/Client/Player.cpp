@@ -50,7 +50,7 @@ void CPlayer::Initialize()
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_RightDown_", L"../Image/Player/Player_RightDown_.bmp");
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_RightUp_", L"../Image/Player/Player_RightUp_.bmp");
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_Up_", L"../Image/Player/Player_Up_.bmp");
-	
+
 	/*Player Info UI*/
 	CBmpMgr::GetInstance()->InsertBmp(L"Player_Info", L"../Image/Ui/Player_Info.bmp");
 	/*Player Slot UI*/
@@ -77,53 +77,55 @@ void CPlayer::Initialize()
 
 	///*Player Info PushBack*/
 	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CPlayerInfo>::CreateObj(450.f, 10.f), ObjID::UI);
-	
-	
+
+
 
 	/*애니메이션 변수 IDLE 상태로 초기화.*/
 	m_pFrameKey = L"Player_Down_";
 	m_eCurStance = IDLE;
 	m_ePreStance = m_eCurStance;
 
-	m_tFrame.iFrameStart	= 0;
-	m_tFrame.iFrameEnd		= 4;
-	m_tFrame.iScene			= 5;
-	m_tFrame.dwOldTime		= GetTickCount();
-	m_tFrame.dwFrameSpd		= 200;
+	m_tFrame.iFrameStart = 0;
+	m_tFrame.iFrameEnd = 4;
+	m_tFrame.iScene = 5;
+	m_tFrame.dwOldTime = GetTickCount();
+	m_tFrame.dwFrameSpd = 200;
 
-	m_iMoveState	= 0;
-	m_bIsRunning	= true;
-	m_bIsAttack		= false;
-	m_bIsSkill		= false;
-	m_bIsHit		= false;
+	m_iMoveState = 0;
+	m_bIsRunning = true;
+	m_bIsAttack = false;
+	m_bIsSkill = false;
+	m_bIsHit = false;
 
 	/*최초 한 번만 생성하기 위한 변수*/
 	m_bIsCreate = true;
 
 	/*Player Info*/
-	m_tInfo.fCX		= 256.f;
-	m_tInfo.fCY		= 256.f;
-	m_tInfo.szName	= L"Sin_Young";
-	m_tInfo.iLevel	= 1;
-	m_tInfo.iMaxHp	= 7000;
-	m_tInfo.iHp		= m_tInfo.iMaxHp;
-	m_tInfo.iMaxMp	= 3000;
-	m_tInfo.iMp		= m_tInfo.iMaxMp;
-	m_tInfo.iMaxSp	= 5000;
-	m_tInfo.iSp		= m_tInfo.iMaxSp;
-	m_tInfo.iAtt	= 123;
-	m_tInfo.iExp	= 0;
+	m_tInfo.fCX = 256.f;
+	m_tInfo.fCY = 256.f;
+	wstring wstr(g_szServerName, &g_szServerName[64]);
+	//m_tInfo.szName = L"Sin_Young";
+	m_tInfo.szName = wstr;
+	m_tInfo.iLevel = 1;
+	m_tInfo.iMaxHp = 7000;
+	m_tInfo.iHp = m_tInfo.iMaxHp;
+	m_tInfo.iMaxMp = 3000;
+	m_tInfo.iMp = m_tInfo.iMaxMp;
+	m_tInfo.iMaxSp = 5000;
+	m_tInfo.iSp = m_tInfo.iMaxSp;
+	m_tInfo.iAtt = 123;
+	m_tInfo.iExp = 0;
 	m_tInfo.iMaxExp = 200;
-	m_tInfo.iGold	= 1000000;
+	m_tInfo.iGold = 1000000;
 
-	m_tAbility.iStap	= 2;
-	m_tAbility.iHack	= 5;
-	m_tAbility.iInt		= 1;
-	m_tAbility.iDef		= 3;
-	m_tAbility.iMr		= 1;
-	m_tAbility.iDex		= 4;
-	m_tAbility.iAgl		= 3;
-		
+	m_tAbility.iStap = 2;
+	m_tAbility.iHack = 5;
+	m_tAbility.iInt = 1;
+	m_tAbility.iDef = 3;
+	m_tAbility.iMr = 1;
+	m_tAbility.iDex = 4;
+	m_tAbility.iAgl = 3;
+
 	m_iComboCnt = 0;
 
 	/*충돌박스 좌표 = Player의 좌표*/
@@ -133,11 +135,11 @@ void CPlayer::Initialize()
 	m_tColInfo.fCY = 30.f;
 
 	/*이동속도*/
-	m_fSpeed	= 2.5f;
+	m_fSpeed = 2.5f;
 
 	/*스킬&공격 방향*/
-	fAttLen		= 60.f;
-	m_fAngle	= 270.f;
+	fAttLen = 60.f;
+	m_fAngle = 270.f;
 
 	m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 	m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
@@ -150,9 +152,9 @@ void CPlayer::LateInit()
 	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CInventory>::CreateObj(625.f, 300.f), ObjID::INVENTORY);
 	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CEquipment>::CreateObj(130.f, 250.f), ObjID::EQUIPMENT);
 
-	m_pPlayerInfo	 = CObjMgr::GetInstance()->GetUiBack();
-	m_pInventory	 = CObjMgr::GetInstance()->GetInventory();
-	m_pEquipment	 = CObjMgr::GetInstance()->GetEquipment();
+	m_pPlayerInfo = CObjMgr::GetInstance()->GetUiBack();
+	m_pInventory = CObjMgr::GetInstance()->GetInventory();
+	m_pEquipment = CObjMgr::GetInstance()->GetEquipment();
 
 	/*인벤토리에 장비창 전달*/
 	static_cast<CInventory*>(m_pInventory)->SetEquipment(CObjMgr::GetInstance()->GetEquipment());
@@ -178,62 +180,36 @@ int CPlayer::Update()
 
 	if (m_bIsDead)
 		return DEAD_OBJ;
-	
-	/*__________________________________________________________________________________________________________
-	[ Data Send ] :: Client ----> Server
-	____________________________________________________________________________________________________________*/
-	int		retval			= 0;
-	char*	szSendData		= "Client::SendData";
-	int		iSendDatalen	= strlen(szSendData);
 
-	// Send Data. (고정 길이)
-	retval = send(g_hSocket,			// 통신할 대상과 연결된 소켓.
-				  (char*)&iSendDatalen,	// 보낼 데이터를 담고 있는 버퍼 주소.
-				  sizeof(int),			// 보낼 데이터 크기.
-				  0);
+	char net_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
+
+	/*int retval = ReceiveData(g_hSocket,
+						 (char*)&net_buf,
+						 MAX_BUF_SIZE,
+						 0);*/
+
+	int retval = recv(g_hSocket, net_buf, MAX_BUF_SIZE, 0);
+
 	if (retval == SOCKET_ERROR)
-		return NO_EVENT;
-
-	// Send Data. (가변 길이)
-	retval = send(g_hSocket,	 // 통신할 대상과 연결된 소켓.
-				  szSendData,	 // 보낼 데이터를 담고 있는 버퍼 주소.
-				  iSendDatalen,	 // 보낼 데이터 크기.
-				  0);
-
-	cout << "Client Send : " << szSendData << endl;
-
-
-	/*__________________________________________________________________________________________________________
-	[ Data Recv ] :: Client <---- Server
-	____________________________________________________________________________________________________________*/
-	char* szRecvBuf{ nullptr };
-	int   iRecvDataLen{ 0 };
-
-	// Data Recv. (고정 길이)
-	retval = ReceiveData(g_hSocket,
-						 (char*)&iRecvDataLen,
-						 sizeof(int),
-						 0);
-	if (retval == SOCKET_ERROR)
-		return NO_EVENT;
-
-	// Data Recv. (가변 길이)
-	szRecvBuf = new char[iRecvDataLen + 1];
-	retval = ReceiveData(g_hSocket,
-						 szRecvBuf,
-						 iRecvDataLen,
-						 0);
-	if (retval == SOCKET_ERROR)
-		return NO_EVENT;
-
-	szRecvBuf[retval] = '\0';
-
-	cout << "Client Recv : "  << szRecvBuf << endl;
-
-	if (szRecvBuf)
 	{
-		delete[] szRecvBuf;
-		szRecvBuf = nullptr;
+		int state = WSAGetLastError();
+		if (state != WSAEWOULDBLOCK)
+		{
+			wchar_t temp[30] = L"Client Socket Recieve Failed";
+			LPCWSTR tempMsg = temp;
+			LPVOID	lpMsgBuf;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+			MessageBox(NULL, (LPCTSTR)lpMsgBuf, tempMsg, MB_ICONERROR);
+			LocalFree(lpMsgBuf);
+			exit(1);
+		}
+	}
+
+	// 데이터 수신 성공
+	if (retval > 0)
+	{
+		// 패킷 재조립
+		process_data(net_buf, static_cast<size_t>(retval));
 	}
 
 	// Player Key Input.
@@ -246,9 +222,9 @@ int CPlayer::Update()
 	if (m_bIsAttack)
 	{
 		m_eCurStance = ATTACK;
-		
+
 		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
-		{	
+		{
 			//콤보 카운트 1증가.
 			m_iComboCnt += 1;
 			if (m_iComboCnt > 1)
@@ -276,7 +252,7 @@ int CPlayer::Update()
 		m_eCurStance = SKILL;
 
 		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
-		{	
+		{
 			// 스킬 상태 끝나면 다시 IDLE 상태로.
 			m_bIsSkill = false;
 			m_eCurStance = IDLE;
@@ -290,7 +266,7 @@ int CPlayer::Update()
 		iHitTime += 5;
 
 		if (iHitTime > 30)
-		{	
+		{
 			// 스킬 상태 끝나면 다시 IDLE 상태로.
 			m_bIsHit = false;
 			m_eCurStance = IDLE;
@@ -332,10 +308,10 @@ int CPlayer::Update()
 		}
 	}
 
-	if(iComboAttackTime > COMBO_TIME)
+	if (iComboAttackTime > COMBO_TIME)
 	{
-		m_bIsCombo			= false;
-		iComboAttackTime	= 0;
+		m_bIsCombo = false;
+		iComboAttackTime = 0;
 
 		// 콤보 카운터 다시 0으로.
 		m_iComboCnt = 0;
@@ -347,7 +323,7 @@ int CPlayer::Update()
 
 	m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 	m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
-	
+
 	return NO_EVENT;
 
 }
@@ -365,7 +341,7 @@ void CPlayer::LateUpdate()
 	IsLevelUp();
 
 	/*콤보박스 좌표갱신*/
-	if(m_pComboBox != nullptr)
+	if (m_pComboBox != nullptr)
 		m_pComboBox->SetPos(m_tInfo.fX - 30.f, m_tInfo.fY - 80.f);
 
 	/*씬마다 스크롤 락 최적화.*/
@@ -401,24 +377,19 @@ void CPlayer::Render(HDC hDC)
 
 	float fScrollX = CScrollMgr::GetScrollX();
 	float fScrollY = CScrollMgr::GetScrollY();
-	
-	/*충돌박스 렌더 - 스크롤 적용.*/
-	/*Rectangle(hDC, m_tColRect.left + fScrollX, m_tColRect.top + fScrollY,
-		m_tColRect.right + fScrollX, m_tColRect.bottom + fScrollY);*/
 
-
-	/*스크롤 적용하여 렌더*/
-	GdiTransparentBlt(hDC, 
-					  m_tRect.left + (int)fScrollX, 
-					  m_tRect.top + (int)fScrollY, 
-					  (int)m_tInfo.fCX, 
-					  (int)m_tInfo.fCY,
-					  hMemDC, 
-					  m_tFrame.iFrameStart * (int)m_tInfo.fCX, 
-					  m_tFrame.iScene * (int)m_tInfo.fCY,
-					  (int)m_tInfo.fCX, 
-					  (int)m_tInfo.fCY, 
-					  RGB(255, 0, 255));
+		/*스크롤 적용하여 렌더*/
+	GdiTransparentBlt(hDC,
+		m_tRect.left + (int)fScrollX,
+		m_tRect.top + (int)fScrollY,
+		(int)m_tInfo.fCX,
+		(int)m_tInfo.fCY,
+		hMemDC,
+		m_tFrame.iFrameStart * (int)m_tInfo.fCX,
+		m_tFrame.iScene * (int)m_tInfo.fCY,
+		(int)m_tInfo.fCX,
+		(int)m_tInfo.fCY,
+		RGB(255, 0, 255));
 
 	/*Player Info Render*/
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Player_Info"));
@@ -426,22 +397,22 @@ void CPlayer::Render(HDC hDC)
 
 	/*Player Hp, Mp, Sp*/
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Player_Hp"));
-	GdiTransparentBlt(hDC, 95, 16, (int)(m_tInfo.iHp*HP_MP_SP_LEN) / m_tInfo.iMaxHp, 14,
+	GdiTransparentBlt(hDC, 95, 16, (int)(m_tInfo.iHp * HP_MP_SP_LEN) / m_tInfo.iMaxHp, 14,
 		hMemDC, 0, 0, 84, 14, RGB(255, 0, 255));
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Player_Mp"));
-	GdiTransparentBlt(hDC, 95, 30, (int)(m_tInfo.iMp*HP_MP_SP_LEN) / m_tInfo.iMaxMp, 14,
+	GdiTransparentBlt(hDC, 95, 30, (int)(m_tInfo.iMp * HP_MP_SP_LEN) / m_tInfo.iMaxMp, 14,
 		hMemDC, 0, 0, 84, 14, RGB(255, 0, 255));
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Player_Sp"));
-	GdiTransparentBlt(hDC, 95, 44, (int)(m_tInfo.iSp*HP_MP_SP_LEN) / m_tInfo.iMaxSp, 14,
+	GdiTransparentBlt(hDC, 95, 44, (int)(m_tInfo.iSp * HP_MP_SP_LEN) / m_tInfo.iMaxSp, 14,
 		hMemDC, 0, 0, 84, 14, RGB(255, 0, 255));
 
 
 	/*Hp Mp Sp 수치 TextOut*/
 	TCHAR szBuf[32] = L"";
 	swprintf_s(szBuf, L"%d / %d", m_tInfo.iHp, m_tInfo.iMaxHp);
-	
+
 	SetBkMode(hDC, TRANSPARENT);
-	TextOut(hDC, 100,15, szBuf, lstrlen(szBuf));
+	TextOut(hDC, 100, 15, szBuf, lstrlen(szBuf));
 
 	swprintf_s(szBuf, L"%d / %d", m_tInfo.iMp, m_tInfo.iMaxMp);
 	TextOut(hDC, 100, 29, szBuf, lstrlen(szBuf));
@@ -467,7 +438,7 @@ void CPlayer::Render(HDC hDC)
 	BitBlt(hDC, 41, 528, 24, 30, hMemDC, 1 * 24, 0, SRCCOPY);
 	/*Multi Attack Quick Icon*/
 	BitBlt(hDC, 71, 528, 24, 30, hMemDC, 4 * 24, 0, SRCCOPY);
-	
+
 	/*포션 아이콘 이미지 랜더*/
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Potion"));
 	GdiTransparentBlt(hDC, 12, 570, 24, 24, hMemDC, 0 * 24, 0, 24, 24, RGB(255, 255, 255));
@@ -510,242 +481,279 @@ void CPlayer::KeyInput()
 	/*__________________________________________________________________________________________________________
 	[ Player Move - RUN ]
 	____________________________________________________________________________________________________________*/
-	if (KEY_PRESSING('A'))
-	{
-		// 공격 방향 설정
-		m_fAngle = 180.f;
+	//if (KEY_PRESSING('A'))
+	//{
+	//	// 공격 방향 설정
+	//	m_fAngle = 180.f;
 
-		// 이미지박스 & 충돌박스 같이 이동.
-		if (KEY_PRESSING('W'))
-		{	
-			// 공격 방향 설정
-			m_fAngle = 240.f;
+	//	// 이미지박스 & 충돌박스 같이 이동.
+	//	if (KEY_PRESSING('W'))
+	//	{	
+	//		// 공격 방향 설정
+	//		m_fAngle = 240.f;
 
-			if (m_bIsRunning)
-			{	
-				//달리기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
+	//		if (m_bIsRunning)
+	//		{	
+	//			//달리기
+	//			m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
+	//			m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_LeftUp_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_LeftUp_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{	
-				//걷기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{	
+	//			//걷기
+	//			m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
+	//			m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_LeftUp_";
-				m_eCurStance = WALK;
-			}
-		}
-		else if (KEY_PRESSING('D'))
-		{
-			// 공격 방향 설정
-			m_fAngle = 125.f;
+	//			m_pFrameKey = L"Player_LeftUp_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//	else if (KEY_PRESSING('D'))
+	//	{
+	//		// 공격 방향 설정
+	//		m_fAngle = 125.f;
 
-			if (m_bIsRunning)
-			{	
-				//달리기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
+	//		if (m_bIsRunning)
+	//		{	
+	//			//달리기
+	//			m_tInfo.fX -= m_fSpeed / sqrtf(2.f);
+	//			m_tInfo.fY += m_fSpeed / sqrtf(2.f);
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_LeftDown_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_LeftDown_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{	
-				//걷기
-				m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{	
+	//			//걷기
+	//			m_tInfo.fX -= m_fSpeed / sqrtf(2.f) / 2;
+	//			m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_LeftDown_";
-				m_eCurStance = WALK;
-			}
-		}
-		else
-		{
-			// 좌 이동
-			if (m_bIsRunning)
-			{	
-				// 달리기
-				m_tInfo.fX -= m_fSpeed;
-				CObj::UpdateColXYPos();
+	//			m_pFrameKey = L"Player_LeftDown_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		// 좌 이동
+	//		if (m_bIsRunning)
+	//		{	
+	//			// 달리기
+	//			m_tInfo.fX -= m_fSpeed;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_Left_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_Left_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{	
-				// 걷기
-				m_tInfo.fX -= m_fSpeed / 2;
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{	
+	//			// 걷기
+	//			m_tInfo.fX -= m_fSpeed / 2;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_Left_";
-				m_eCurStance = WALK;
-			}
-		}
-	}
-	else if (KEY_PRESSING('D'))
-	{
-		// 공격 방향 설정
-		m_fAngle = 360.f;
-		if (KEY_PRESSING('W'))
-		{	
-			// 공격 방향 설정
-			m_fAngle = 300.f;
+	//			m_pFrameKey = L"Player_Left_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//}
+	//else if (KEY_PRESSING('D'))
+	//{
+	//	// 공격 방향 설정
+	//	m_fAngle = 360.f;
+	//	if (KEY_PRESSING('W'))
+	//	{	
+	//		// 공격 방향 설정
+	//		m_fAngle = 300.f;
 
-			if (m_bIsRunning) //달리기
-			{	
-				// 이미지 박스
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
+	//		if (m_bIsRunning) //달리기
+	//		{	
+	//			// 이미지 박스
+	//			m_tInfo.fX += m_fSpeed / sqrtf(2.f);
+	//			m_tInfo.fY -= m_fSpeed / sqrtf(2.f);
 
-				// 충돌 박스
-				CObj::UpdateColXYPos();
+	//			// 충돌 박스
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_RightUp_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_RightUp_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{	
-				//걷기
-				// 이미지 박스
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
-				
-				// 충돌 박스
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{	
+	//			//걷기
+	//			// 이미지 박스
+	//			m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
+	//			m_tInfo.fY -= m_fSpeed / sqrtf(2.f) / 2;
+	//			
+	//			// 충돌 박스
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_RightUp_";
-				m_eCurStance = WALK;
-			}
-		}
-		else if (KEY_PRESSING('S'))
-		{
-			// 공격 방향 설정
-			m_fAngle = 55.f;
+	//			m_pFrameKey = L"Player_RightUp_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//	else if (KEY_PRESSING('S'))
+	//	{
+	//		// 공격 방향 설정
+	//		m_fAngle = 55.f;
 
-			if (m_bIsRunning)
-			{	
-				//달리기
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f);
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f);
-				CObj::UpdateColXYPos();
+	//		if (m_bIsRunning)
+	//		{	
+	//			//달리기
+	//			m_tInfo.fX += m_fSpeed / sqrtf(2.f);
+	//			m_tInfo.fY += m_fSpeed / sqrtf(2.f);
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_RightDown_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_RightDown_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{	
-				//걷기
-				m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
-				m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{	
+	//			//걷기
+	//			m_tInfo.fX += m_fSpeed / sqrtf(2.f) / 2;
+	//			m_tInfo.fY += m_fSpeed / sqrtf(2.f) / 2;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_RightDown_";
-				m_eCurStance = WALK;
-			}
-		}
-		else
-		{	
-			//달리기
-			if (m_bIsRunning)
-			{	
-				// 우 이동
-				m_tInfo.fX += m_fSpeed;
-				CObj::UpdateColXYPos();
+	//			m_pFrameKey = L"Player_RightDown_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//	else
+	//	{	
+	//		//달리기
+	//		if (m_bIsRunning)
+	//		{	
+	//			// 우 이동
+	//			m_tInfo.fX += m_fSpeed;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_Right_";
-				m_eCurStance = RUN;
+	//			m_pFrameKey = L"Player_Right_";
+	//			m_eCurStance = RUN;
 
-				--m_tInfo.iSp;
-			}
-			else
-			{ 
-				//걷기
-				m_tInfo.fX += m_fSpeed / 2;
-				CObj::UpdateColXYPos();
+	//			--m_tInfo.iSp;
+	//		}
+	//		else
+	//		{ 
+	//			//걷기
+	//			m_tInfo.fX += m_fSpeed / 2;
+	//			CObj::UpdateColXYPos();
 
-				m_pFrameKey = L"Player_Right_";
-				m_eCurStance = WALK;
-			}
-		}
-	}
-	else if (KEY_PRESSING('W'))
-	{
-		// 공격 방향 설정
-		m_fAngle = 270.f;
-		if (m_bIsRunning)
-		{	
-			//달리기
-			m_tInfo.fY -= m_fSpeed;
-			CObj::UpdateColXYPos();
+	//			m_pFrameKey = L"Player_Right_";
+	//			m_eCurStance = WALK;
+	//		}
+	//	}
+	//}
+	//else if (KEY_PRESSING('W'))
+	//{
+	//	// 공격 방향 설정
+	//	m_fAngle = 270.f;
+	//	if (m_bIsRunning)
+	//	{	
+	//		//달리기
+	//		m_tInfo.fY -= m_fSpeed;
+	//		CObj::UpdateColXYPos();
 
-			m_pFrameKey = L"Player_Up_";
-			m_eCurStance = RUN;
+	//		m_pFrameKey = L"Player_Up_";
+	//		m_eCurStance = RUN;
 
-			--m_tInfo.iSp;
-		}
-		else
-		{	
-			//걷기
-			m_tInfo.fY -= m_fSpeed / 2;
-			CObj::UpdateColXYPos();
+	//		--m_tInfo.iSp;
+	//	}
+	//	else
+	//	{	
+	//		//걷기
+	//		m_tInfo.fY -= m_fSpeed / 2;
+	//		CObj::UpdateColXYPos();
 
-			m_pFrameKey = L"Player_Up_";
-			m_eCurStance = WALK;
-		}
+	//		m_pFrameKey = L"Player_Up_";
+	//		m_eCurStance = WALK;
+	//	}
 
-	}
-	else if (KEY_PRESSING('S'))
-	{
-		// 공격 방향 설정
-		m_fAngle = 90.f;
-		if (m_bIsRunning)
-		{	
-			//달리기
-			m_tInfo.fY += m_fSpeed;
-			CObj::UpdateColXYPos();
+	//}
+	//else if (KEY_PRESSING('S'))
+	//{
+	//	// 공격 방향 설정
+	//	m_fAngle = 90.f;
+	//	if (m_bIsRunning)
+	//	{	
+	//		//달리기
+	//		m_tInfo.fY += m_fSpeed;
+	//		CObj::UpdateColXYPos();
 
-			m_pFrameKey = L"Player_Down_";
-			m_eCurStance = RUN;
+	//		m_pFrameKey = L"Player_Down_";
+	//		m_eCurStance = RUN;
 
-			--m_tInfo.iSp;
-		}
-		else
-		{	
-			//걷기
-			m_tInfo.fY += m_fSpeed / 2;
-			CObj::UpdateColXYPos();
+	//		--m_tInfo.iSp;
+	//	}
+	//	else
+	//	{	
+	//		//걷기
+	//		m_tInfo.fY += m_fSpeed / 2;
+	//		CObj::UpdateColXYPos();
 
-			m_pFrameKey = L"Player_Down_";
-			m_eCurStance = WALK;
-		}
-	}
-	else if(KEY_UP('A'))
+	//		m_pFrameKey = L"Player_Down_";
+	//		m_eCurStance = WALK;
+	//	}
+	//}
+	/*else if (KEY_UP('A'))
 		m_eCurStance = IDLE;
 	else if (KEY_UP('D'))
 		m_eCurStance = IDLE;
 	else if (KEY_UP('W'))
 		m_eCurStance = IDLE;
 	else if (KEY_UP('S'))
-		m_eCurStance = IDLE;
+		m_eCurStance = IDLE;*/
+
+
+
+
+	if (KEY_PRESSING('A') && g_bIsActive)
+	{
+		send_move_packet(MV_LEFT);
+		m_pFrameKey = L"Player_Left_";
+		m_eCurStance = RUN;
+	}
+	else if (KEY_PRESSING('D') && g_bIsActive)
+	{
+		send_move_packet(MV_RIGHT);
+		m_pFrameKey = L"Player_Right_";
+		m_eCurStance = RUN;
+	}
+	else if (KEY_PRESSING('W') && g_bIsActive)
+	{
+		send_move_packet(MV_UP);
+		m_pFrameKey = L"Player_Up_";
+		m_eCurStance = RUN;
+	}
+	else if (KEY_PRESSING('S') && g_bIsActive)
+	{
+		send_move_packet(MV_DOWN);
+		m_pFrameKey = L"Player_Down_";
+		m_eCurStance = RUN;
+	}
+
+	else if (KEY_UP('A'))
+	m_eCurStance = IDLE;
+	else if (KEY_UP('D'))
+	m_eCurStance = IDLE;
+	else if (KEY_UP('W'))
+	m_eCurStance = IDLE;
+	else if (KEY_UP('S'))
+	m_eCurStance = IDLE;
 
 
 
@@ -786,7 +794,7 @@ void CPlayer::KeyInput()
 
 	// 스킬 공격
 	else if (KEY_DOWN(VK_RBUTTON))
-	{	
+	{
 		if (m_iComboCnt > 0)
 		{
 			// 콤보 카운트 0보다 큰 상태이면
@@ -794,7 +802,7 @@ void CPlayer::KeyInput()
 			{
 				// 콤보어택 제한시간을 넘지 않았으면.
 				m_bIsCombo = true;
-				
+
 				// 콤보어택에 성공 했으면 제한시간 초기화.
 				iComboAttackTime = 0;
 
@@ -808,8 +816,8 @@ void CPlayer::KeyInput()
 			}
 		}
 
-		m_bIsSkill		= true;
-		m_eCurStance	= SKILL;
+		m_bIsSkill = true;
+		m_eCurStance = SKILL;
 
 		CObj::UpdateColXYPos();
 
@@ -851,19 +859,19 @@ void CPlayer::KeyInput()
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
-		m_tInfo.iHp += (int)(m_tInfo.iMaxHp*0.1f);
+		m_tInfo.iHp += (int)(m_tInfo.iMaxHp * 0.1f);
 
 		if (m_tInfo.iHp > m_tInfo.iMaxHp)
 			m_tInfo.iHp = m_tInfo.iMaxHp;
 
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
 	}
 	else if (KEY_DOWN(VK_F6))
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
-		m_tInfo.iSp += (int)(m_tInfo.iMaxSp*0.1f);
+		m_tInfo.iSp += (int)(m_tInfo.iMaxSp * 0.1f);
 
 		if (m_tInfo.iSp > m_tInfo.iMaxSp)
 			m_tInfo.iSp = m_tInfo.iMaxSp;
@@ -875,12 +883,12 @@ void CPlayer::KeyInput()
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
-		m_tInfo.iMp += (int)(m_tInfo.iMaxMp*0.1f);
+		m_tInfo.iMp += (int)(m_tInfo.iMaxMp * 0.1f);
 
 		if (m_tInfo.iMp > m_tInfo.iMaxMp)
 			m_tInfo.iMp = m_tInfo.iMaxMp;
 
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY -1.f),
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
 	}
 
@@ -910,7 +918,7 @@ void CPlayer::KeyInput()
 		else
 			static_cast<CInvenButton*>(m_pInvenButton)->SetDrawKey(0);
 
-			
+
 	}
 
 	// Player Equipment.
@@ -935,46 +943,46 @@ void CPlayer::SceneChange()
 		switch (m_eCurStance)
 		{
 		case IDLE:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 4;
-			m_tFrame.iScene			= 5;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 100;
+			m_tFrame.iFrameStart = 0;
+			m_tFrame.iFrameEnd = 4;
+			m_tFrame.iScene = 5;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 100;
 			break;
 		case WALK:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 8;
-			m_tFrame.iScene			= 6;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 100;
+			m_tFrame.iFrameStart = 0;
+			m_tFrame.iFrameEnd = 8;
+			m_tFrame.iScene = 6;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 100;
 			break;
 		case RUN:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 9;
-			m_tFrame.iScene			= 3;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 100;
+			m_tFrame.iFrameStart = 0;
+			m_tFrame.iFrameEnd = 9;
+			m_tFrame.iScene = 3;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 100;
 			break;
 		case ATTACK:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 5;
-			m_tFrame.iScene			= 0;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 100;
+			m_tFrame.iFrameStart = 0;
+			m_tFrame.iFrameEnd = 5;
+			m_tFrame.iScene = 0;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 100;
 			break;
 		case SKILL:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 8;
-			m_tFrame.iScene			= 2;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 100;
+			m_tFrame.iFrameStart = 0;
+			m_tFrame.iFrameEnd = 8;
+			m_tFrame.iScene = 2;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 100;
 			break;
 		case HIT:
-			m_tFrame.iFrameStart	= 1;
-			m_tFrame.iFrameEnd		= 1;
-			m_tFrame.iScene			= 1;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 200;
+			m_tFrame.iFrameStart = 1;
+			m_tFrame.iFrameEnd = 1;
+			m_tFrame.iScene = 1;
+			m_tFrame.dwOldTime = GetTickCount();
+			m_tFrame.dwFrameSpd = 200;
 			break;
 		}
 
@@ -1019,28 +1027,28 @@ void CPlayer::IsLevelUp()
 
 			++m_tInfo.iLevel;
 
-			m_tInfo.iMaxHp = (int)(m_tInfo.iMaxHp+ m_tInfo.iMaxHp*0.1f);
+			m_tInfo.iMaxHp = (int)(m_tInfo.iMaxHp + m_tInfo.iMaxHp * 0.1f);
 			m_tInfo.iHp = m_tInfo.iMaxHp;
 
-			m_tInfo.iMaxMp = (int)(m_tInfo.iMaxMp  + m_tInfo.iMaxMp*0.05f);
+			m_tInfo.iMaxMp = (int)(m_tInfo.iMaxMp + m_tInfo.iMaxMp * 0.05f);
 			m_tInfo.iMp = m_tInfo.iMaxMp;
 
-			m_tInfo.iMaxSp =(int)(m_tInfo.iMaxSp  + m_tInfo.iMaxSp* 0.05f);
+			m_tInfo.iMaxSp = (int)(m_tInfo.iMaxSp + m_tInfo.iMaxSp * 0.05f);
 			m_tInfo.iSp = m_tInfo.iMaxSp;
 
-			m_tInfo.iAtt = (int)(m_tInfo.iAtt + m_tInfo.iAtt*0.2f);
+			m_tInfo.iAtt = (int)(m_tInfo.iAtt + m_tInfo.iAtt * 0.2f);
 
 
-			m_tAbility.iStap	+= 2;
-			m_tAbility.iHack	+= 5;
-			m_tAbility.iInt		+= 1;
-			m_tAbility.iDef		+= 3;
-			m_tAbility.iMr		+= 1;
-			m_tAbility.iDex		+= 2;
-			m_tAbility.iAgl		+= 2;
+			m_tAbility.iStap += 2;
+			m_tAbility.iHack += 5;
+			m_tAbility.iInt += 1;
+			m_tAbility.iDef += 3;
+			m_tAbility.iMr += 1;
+			m_tAbility.iDex += 2;
+			m_tAbility.iAgl += 2;
 
 
-			m_tInfo.iMaxExp = (int)(m_tInfo.iMaxExp + m_tInfo.iMaxExp*0.2f);
+			m_tInfo.iMaxExp = (int)(m_tInfo.iMaxExp + m_tInfo.iMaxExp * 0.2f);
 		}
 	}
 }

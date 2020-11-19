@@ -1,17 +1,265 @@
 #pragma comment(lib, "ws2_32")
 #include <WinSock2.h>
 #include <iostream>
+#include <random>
 
 #include "Protocol.h"
 
 using namespace std;
 using namespace PROTOCOL;
+using namespace PROTOCOL_TEST;
+
+typedef struct tagClientInfo
+{
+    /* 게임 콘텐츠 */
+    char name[MAX_ID_LEN];
+    int level;
+    int hp;
+    int mp;
+    int exp;
+    int sp;
+    int att;
+    float x, y;
+    float  speed;
+
+    /* 시스템 콘텐츠 */
+    bool in_use;
+    SOCKET m_sock;
+    char m_packet_buf[MAX_BUF_SIZE];
+
+}CINFO;
+
+CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER];
+//CRITICAL_SECTION cs;
+
+void err_quit(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(NULL, (LPCTSTR)lpMsgBuf, (LPCWSTR)msg, MB_ICONERROR);
+	LocalFree(lpMsgBuf);
+	exit(1);
+}
+
+// 소켓 함수 오류 출력.
+void err_display(char* msg)
+{
+	LPVOID lpMsgBuf;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	printf("[%s] %s", msg, (char*)lpMsgBuf);
+	LocalFree(lpMsgBuf);
+}
+
+/* 패킷 전송 함수 */
+void send_packet(int id, void* p)
+{
+    char* packet = reinterpret_cast<char*>(p);
+
+    //EnterCriticalSection(&cs);
+    if (g_tClient[id].in_use)
+    {
+        int ret = send(g_tClient[id].m_sock, packet, packet[0], 0);
+        //LeaveCriticalSection(&cs);
+
+        if (SOCKET_ERROR == ret)
+            err_quit("send()");
+
+        cout << id << "번 클라로 보내는 패킷 타입-" << static_cast<int>(packet[1]) << endl;
+        cout << id << "번 클라로 보내줘야할 패킷타입 크기: " << static_cast<int>(packet[0]) << endl;
+    }
+}
+
+/* 새로운 클라이언트 로그인 패킷 */
+void send_login_ok(int id)
+{
+    /* 보낼 로그인 정보 채우기 */
+    sc_packet_login_ok p;
+
+    p.size = sizeof(p);
+    p.type = SC_PACKET_LOGIN_OK;
+
+    p.att = 0;
+    p.exp = 0;
+    p.hp = 100;
+    p.mp = 100;
+    p.id = id;
+    p.level = 1;
+    p.sp = 100;
+    p.speed = 100;
+    p.x = g_tClient[id].x;
+    p.y = g_tClient[id].y;
+
+    /* 로그인 처리 후 해당 클라이언트에게 패킷 전송 */
+    send_packet(id, &p);
+}
+
+void send_enter_packet(int to, int id)
+{
+    sc_packet_enter p;
+
+    p.size = sizeof(p);
+    p.type = SC_PACKET_ENTER;
+
+    p.id = id;
+    //EnterCriticalSection(&cs);
+    strcpy_s(p.name, g_tClient[id].name);
+    //LeaveCriticalSection(&cs);
+    p.o_type = 0;
+    p.x = g_tClient[id].x;
+    p.y = g_tClient[id].y;
+
+    send_packet(to, &p);
+}
+
+void send_move_packet(int to, int id)
+{
+    sc_packet_move p;
+    p.size = sizeof(p);
+    p.type = SC_PACKET_MOVE;
+
+    p.id = id;
+    p.x = g_tClient[id].x;
+    p.y = g_tClient[id].y;
+
+    send_packet(to, &p);
+}
+
+void process_move(int id, char dir)
+{
+    float x = g_tClient[id].x;
+    float y = g_tClient[id].y;
+
+    switch (dir)
+    {
+    case MV_UP:
+        y -= 2.5f;
+        break;
+    case MV_DOWN:
+        y += 2.5f;
+        break;
+    case MV_LEFT:
+        x -= 2.5f;
+        break;
+    case MV_RIGHT:
+        x += 2.5f;
+        break;
+    default:
+        cout << "Unknown Direction in CS_MOVE packet." << endl;
+        while (true);
+
+        break;
+    }
+
+    /* 해당 클라이언트가 움직인 후 좌표 */
+    g_tClient[id].x = x;
+    g_tClient[id].y = y;
+
+    /* 이동 키 입력을 보낸 클라이언트에게 자신의 움직인 결과를 보내준다. */
+    send_move_packet(id, id);
+
+    for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+    {
+        if (i != id)
+        {
+            send_move_packet(i, id);
+        }
+    }
+}
+
+void ProcessPacket(char* ptr,int server_id)
+{
+    switch (ptr[1])
+    {
+    case CS_PACKET_LOGIN:
+    {
+        /* 로그인 확인 처리 */
+        cs_packet_login* p = reinterpret_cast<cs_packet_login*>(g_tClient[server_id].m_packet_buf);
+
+        //EnterCriticalSection(&cs);
+        strcpy_s(g_tClient[server_id].name, p->name);
+        //LeaveCriticalSection(&cs);
+
+        /* 로그인 확인 처리 완료 후 작업 */
+        send_login_ok(server_id);
+
+        /* 다른 유저에게 접속 사실을 알림 */
+        for (int i = 0; i < MAX_PLAYER; ++i)
+        {
+            if (g_tClient[i].in_use)
+            {
+                if (server_id != i)
+                {
+                    send_enter_packet(i, server_id);
+                    send_enter_packet(server_id, i);
+                }
+            }
+        }
+    }
+    break;
+
+    case CS_PACKET_MOVE:
+    {
+        cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
+        process_move(server_id, p->direction);
+    }
+    break;
+    default:
+        break;
+    }
+}
+
+void process_data(char* net_buf, size_t io_byte,int server_id)
+{
+    char* ptr = net_buf;
+    static size_t in_packet_size = 0;
+    static size_t saved_packet_size = 0;
+    static char packet_buffer[PROTOCOL_TEST::MAX_BUF_SIZE];
+
+    while (0 != io_byte)
+    {
+        if (0 == in_packet_size) in_packet_size = ptr[0];
+
+        if (io_byte + saved_packet_size >= in_packet_size)
+        {
+            memcpy(packet_buffer + saved_packet_size, ptr, in_packet_size - saved_packet_size);
+            ProcessPacket(packet_buffer, server_id);
+            ptr += in_packet_size - saved_packet_size;
+            io_byte -= in_packet_size - saved_packet_size;
+            in_packet_size = 0;
+            saved_packet_size = 0;
+        }
+        else
+        {
+            memcpy(packet_buffer + saved_packet_size, ptr, io_byte);
+            saved_packet_size += io_byte;
+            io_byte = 0;
+        }
+    }
+}
+
+int Connect_NewClient(SOCKET ns);
+
 
 DWORD WINAPI ClientThread(LPVOID arg);
 int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum);
 
 int main(int argc, char* argv[])
 {
+    // Err_Display() -> 한국어 지원
+    wcout.imbue(std::locale("korean"));
+
+    // Client Object Init
+    for (auto& cl : g_tClient)
+        cl.in_use = false;
+
+    //InitializeCriticalSection(&cs);
+
 	int retval = 0;
 
     /*__________________________________________________________________________________________________________
@@ -27,6 +275,7 @@ int main(int argc, char* argv[])
 	SOCKET pListenSocket = socket(AF_INET,      // IPv4
                                   SOCK_STREAM,  // TCP 프로토콜
                                   0);
+
     if (INVALID_SOCKET == pListenSocket)
         err_quit("socket()");
 
@@ -37,7 +286,7 @@ int main(int argc, char* argv[])
     ZeroMemory(&tServerAddr, sizeof(tServerAddr));
     tServerAddr.sin_family      = AF_INET;             // IPv4
     tServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);   // 클라이언트의 어떤 IP주소로든 접속 허용.
-    tServerAddr.sin_port        = htons(SERVER_PORT);  // 서버의 지역 포트 번호 설정.
+    tServerAddr.sin_port        = htons(PROTOCOL_TEST::SERVER_PORT);  // 서버의 지역 포트 번호 설정.
 
     retval = bind(pListenSocket,                       // 클라이언트 접속을 수용할 목적으로 만든 소켓.
                   (SOCKADDR*)&tServerAddr,             // 소켓 구조 구조체.
@@ -77,24 +326,22 @@ int main(int argc, char* argv[])
         pClientSocket = accept(pListenSocket,           // 클라이언트 접속을 수용할 목적으로 만든 소켓.
                                (SOCKADDR*)&tClientAddr, // 접속한 클라이언트의 주소 정보가 채워진다.
                                &iAddrLen);              // accept() 함수가 채워넣은 주소 정보의 크기.
+
         if (INVALID_SOCKET == pClientSocket)
         {
             err_display("accept()");
             break;
         }
 
-        // Print ClientInfo.
-        cout << "[TCP Server] Client Connect \t IP Address = " << inet_ntoa(tClientAddr.sin_addr) 
-            << "\t Port Number = " << ntohs(tClientAddr.sin_port) << endl;
-        cout << endl;
-
+        /* 새로운 유저 접속 처리 */
+        int server_id = Connect_NewClient(pClientSocket);
 
         // 1Client - 1Thread Context Model.
         // Create Thread Context.
         hThread = CreateThread(NULL,                    // 핸들 상속과 보안 디스크립터 정보.
                                0,                       // 스레드에 할당되는 스택 크기. 기본 값은 1MB.
                                ClientThread,            // 스레드 함수의 시작 주소.
-                               (LPVOID)pClientSocket,   // 스레드 함수 전달 인자. 
+                               (LPVOID)server_id,   // 스레드 함수 전달 인자. 
                                0,                       // 스레드 생성을 제어하는 값.  0 또는 CREATE_SUSPENDED
                                NULL);                   // DWORD변수를 전달하면 스레드 ID가 저장됨. 필요 없다면 NULL.
         
@@ -103,6 +350,8 @@ int main(int argc, char* argv[])
         else
             CloseHandle(hThread);
     }
+
+    //DeleteCriticalSection(&cs);
 
     // CloseSocket.
     closesocket(pListenSocket);
@@ -113,31 +362,21 @@ DWORD __stdcall ClientThread(LPVOID arg)
 {
     int retval{ 0 };
     
-    // 클라이언트 소켓.
-    SOCKET      pClientSocket{ (SOCKET)arg };
+    // 클라이언트가 할당받은 SERVER ID
+    int server_id{ (int)arg };
+
     SOCKADDR_IN tClientAddr;
     ZeroMemory(&tClientAddr, sizeof(SOCKADDR_IN));
     int iAddrLen{ sizeof(tClientAddr) };
 
-    char*   szRecvBuf{ nullptr };
-    int     iRecvDataLen{ 0 };
-    int     iSendDataLen{ 0 };
-
     while (true)
     {
-        if (szRecvBuf)
-        {
-            delete[] szRecvBuf;
-            szRecvBuf = nullptr;
-        }
-
-        /*__________________________________________________________________________________________________________
+      /*__________________________________________________________________________________________________________
         [ Data Receive ] :: Server <---- Client
         ____________________________________________________________________________________________________________*/
-        // Data Receive. (고정 길이)
-        retval = ReceiveData(pClientSocket,                   // 통신할 대상과 연결된 소켓.
-                             (char*)&iRecvDataLen,            // 받은 데이터를 저장할 버퍼의 주소.
-                             sizeof(int),                     // 수신 버퍼로부터 복사할 최대 데이터의 크기.
+        retval = ReceiveData(g_tClient[server_id].m_sock,     // 통신할 대상과 연결된 소켓.
+                             g_tClient[server_id].m_packet_buf,// 받은 데이터를 저장할 버퍼의 주소.
+                             sizeof(g_tClient[server_id].m_packet_buf),// 수신 버퍼로부터 복사할 최대 데이터의 크기.
                              0,
                              ntohs(tClientAddr.sin_port));    // 클라이언트 포트번호.
         if (SOCKET_ERROR == retval)
@@ -148,62 +387,108 @@ DWORD __stdcall ClientThread(LPVOID arg)
         else if (0 == retval)
             continue;
 
-        // Data Receive. (가변 길이)
-        szRecvBuf = new char[iRecvDataLen + 1];
-        retval = ReceiveData(pClientSocket,                   // 통신할 대상과 연결된 소켓.
-                             szRecvBuf,                       // 받은 데이터를 저장할 버퍼의 주소.
-                             iRecvDataLen,                    // 수신 버퍼로부터 복사할 최대 데이터의 크기.
-                             0,
-                             ntohs(tClientAddr.sin_port));    // 클라이언트 포트번호.
-        if (SOCKET_ERROR == retval)
+
+        /* 패킷 타입 확인 */
+        char p_type = g_tClient[server_id].m_packet_buf[1];
+
+        switch (p_type)
         {
-            err_display("recv()");
+        case CS_PACKET_LOGIN:
+        {
+            /* 로그인 확인 처리 */
+            cs_packet_login* p = reinterpret_cast<cs_packet_login*>(g_tClient[server_id].m_packet_buf);
+           
+            //EnterCriticalSection(&cs);
+            strcpy_s(g_tClient[server_id].name, p->name);
+            //LeaveCriticalSection(&cs);
+            
+            /* 로그인 확인 처리 완료 후 작업 */
+            send_login_ok(server_id);
+
+            /* 다른 유저에게 접속 사실을 알림 */
+            for (int i = 0; i < MAX_PLAYER; ++i)
+            {
+                if (g_tClient[i].in_use)
+                {
+                    if (server_id != i)
+                    {
+                        send_enter_packet(i, server_id);
+                        send_enter_packet(server_id, i);
+                    }
+                }
+            }
+        }
+        break;
+
+        case CS_PACKET_MOVE:
+        {
+            cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
+            process_move(server_id, p->direction);
+        }
+        break;
+        default:
             break;
         }
-        else if (0 == retval)
-            continue;
-
-        // 데이터 사이즈를 초과하는 값을 읽어올 수 있으므로 데이터의 마지막은 확실하게 NULL처리.
-        szRecvBuf[retval] = '\0';
-
-        cout << "Server Recv : " << szRecvBuf << endl;
-
-        
-        /*__________________________________________________________________________________________________________
-        [ Data Send ] :: Server ----> Client
-        ____________________________________________________________________________________________________________*/
-        char* szSendBuf = "Server::SendData";
-        iSendDataLen = strlen(szSendBuf);
-
-        // Data Send (고정길이)
-        retval = send(pClientSocket,        // 통신할 대상과 연결된 소켓.
-                      (char*)&iSendDataLen, // 보낼 데이터를 담고 있는 버퍼 주소.
-                      sizeof(int),          // 보낼 데이터 크기.
-                      0);
-
-        // Data Send (가변길이)
-        retval = send(pClientSocket,        // 통신할 대상과 연결된 소켓.
-                      szSendBuf,            // 보낼 데이터를 담고 있는 버퍼 주소
-                      iSendDataLen,         // 보낼 데이터 크기.
-                      0);
-        if (retval == SOCKET_ERROR)
-        {
-            err_display("send()");
-            break;
-        }
-
-        cout << "Server Send : " << szSendBuf << endl;
-
-
     }
 
     // Close Socket
-    closesocket(pClientSocket);
+    closesocket(g_tClient[server_id].m_sock);
 
-    // Print ClientInfo.
-    cout << "[TCP Server] Client Exit \t IP Address = " << inet_ntoa(tClientAddr.sin_addr)
-        << "\t Port Number = " << ntohs(tClientAddr.sin_port) << endl;
     return 0;
+}
+
+int Connect_NewClient(SOCKET ns)
+{
+    /* 새로운 유저 접속 완료 */
+    int i;
+
+    for (i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+    {
+        if (!g_tClient[i].in_use)
+            break;
+    }
+
+    /* 접속 수용인원 초과 */
+    if (PROTOCOL_TEST::MAX_PLAYER == i)
+    {
+        cout << "Max User limit exceeded." << endl;
+        closesocket(ns);
+    }
+    else
+    {
+        /* 접속 완료 */
+        cout << "New Client Accepted [" << i << "]" << endl;
+
+        /* 새로 접속한 유저의 클라이언트 객체 정보 설정 */
+        /* 1) 시스템 콘텐츠 */
+        //EnterCriticalSection(&cs);
+        g_tClient[i].m_sock = ns;
+        g_tClient[i].in_use = true;
+        g_tClient[i].name[0] = 0;
+        //LeaveCriticalSection(&cs);
+
+        /* 2) 게임 콘텐츠 */
+        g_tClient[i].att = 0;
+        g_tClient[i].exp = 0;
+        g_tClient[i].hp = 0;
+        g_tClient[i].mp = 0;
+        g_tClient[i].level = 0;
+        g_tClient[i].sp = 0;
+        g_tClient[i].speed = 0;
+
+        /* 새로운 플레이어의 초기 위치 값 설정 */
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<int> posX(260, WORLD_WIDTH - 300);
+        uniform_int_distribution<int> posY(260, WORLD_HEIGHT - 300);
+
+        /*g_tClient[i].x= (float)posX(gen);
+        g_tClient[i].y = (float)posY(gen);*/
+        g_tClient[i].x = 400.f;
+        g_tClient[i].y = 400.f;
+
+    }
+    return i;
 }
 
 int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum)
@@ -211,23 +496,26 @@ int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum)
     int     received    = 0;
     char*   ptr         = buf;
     int     left        = len;
+    int finish_size = 0;
 
     while (left > 0)
     {
-        received = recv(s,      // 통신할 대상과 연결된 소켓.
-                        ptr,    // 받은 데이터를 저장할 버퍼의 주소.
-                        left,   // 수신 버퍼로부터 복사할 최대 데이터의 크기.
-                        flags);
+        received = recv(s, ptr, left, flags);
 
+        cout << "클라에서 받은 패킷 타입-" << static_cast<int>(ptr[1]) << endl;
         if (SOCKET_ERROR == received)
-            return SOCKET_ERROR;
+        {
+            err_display("recv()");
+        }
 
         else if (0 == received)
             break;
 
+        if (received == static_cast<int>(ptr[0]))
+            return received;
+
         left -= received;
         ptr += received;
     }
-
     return (len - left);
 }

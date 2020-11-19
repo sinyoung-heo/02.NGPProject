@@ -64,6 +64,19 @@ protected:
 	int ReceiveData(SOCKET s, char* buf, int len, int flags);
 
 protected:
+	/* ____________________________[서버 관련 함수]____________________________ */
+	/* CLIENT MOVE PACKET */
+	void send_move_packet(unsigned char dir);
+	/* SEND 함수*/
+	void send_packet(void* packet);
+	/* RECV 함수 */
+	void Recv_DataFromServer();
+	/* 패킷 처리(모든 컨텐츠를 처리해야 한다) */
+	void ProcessPacket(char* ptr);
+
+	void process_data(char* net_buf, size_t io_byte);
+
+protected:
 	INFO m_tInfo;
 	RECT m_tRect;	//이미지 박스
 
@@ -89,5 +102,8 @@ protected:
 	
 	Layer::ID m_eLayer;
 
+	/* server */
+	char m_szName[MAX_ID_LEN];
+	char m_recv_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
 };
 

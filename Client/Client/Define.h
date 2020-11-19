@@ -1,5 +1,7 @@
 #pragma once
 
+constexpr int NPC_ID_START = 10000;
+
 #define WINCX 800
 #define WINCY 600
 
