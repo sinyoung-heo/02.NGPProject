@@ -3,7 +3,6 @@
 #include "Player.h"
 
 
-
 CMainGame::CMainGame()
 {
 }
@@ -92,6 +91,9 @@ void CMainGame::Initialize()
 
 void CMainGame::Update()
 {
+	// Recv Server PacketData.
+	CPacketMgr::GetInstance()->RecvPacketFromServer();
+
 	CSceneMgr::GetInstance()->Update();
 }
 
@@ -145,6 +147,7 @@ void CMainGame::Ready_Server()
 
 	// Create Windows Socket
 	g_hSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 	/* Non-Blocking Socket으로 전환 */
 	unsigned long ul = 1;
 	ioctlsocket(g_hSocket, FIONBIO, (unsigned long*)&ul);
@@ -166,9 +169,9 @@ int CMainGame::Connect_Server()
 	SOCKADDR_IN sockAddr;
 	memset(&sockAddr, 0, sizeof(sockAddr));
 
-	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons(PROTOCOL_TEST::SERVER_PORT);
-	sockAddr.sin_addr.s_addr = inet_addr(PROTOCOL_TEST::SERVER_IP);
+	sockAddr.sin_family			= AF_INET;
+	sockAddr.sin_port			= htons(PROTOCOL_TEST::SERVER_PORT);
+	sockAddr.sin_addr.s_addr	= inet_addr(PROTOCOL_TEST::SERVER_IP);
 
 
 	if (connect(g_hSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) == SOCKET_ERROR)

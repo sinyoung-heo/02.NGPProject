@@ -2,32 +2,13 @@
 #include <WinSock2.h>
 #include <iostream>
 #include <random>
-
 #include "Protocol.h"
+#include "Struct.h"
 
 using namespace std;
 using namespace PROTOCOL;
 using namespace PROTOCOL_TEST;
 
-typedef struct tagClientInfo
-{
-    /* 게임 콘텐츠 */
-    char name[MAX_ID_LEN];
-    int level;
-    int hp;
-    int mp;
-    int exp;
-    int sp;
-    int att;
-    float x, y;
-    float  speed;
-
-    /* 시스템 콘텐츠 */
-    bool in_use;
-    SOCKET m_sock;
-    char m_packet_buf[MAX_BUF_SIZE];
-
-}CINFO;
 
 CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER];
 //CRITICAL_SECTION cs;
@@ -43,8 +24,6 @@ void err_quit(char* msg)
 	LocalFree(lpMsgBuf);
 	exit(1);
 }
-
-// 소켓 함수 오류 출력.
 void err_display(char* msg)
 {
 	LPVOID lpMsgBuf;
@@ -55,6 +34,11 @@ void err_display(char* msg)
 	printf("[%s] %s", msg, (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
+
+int             Connect_NewClient(SOCKET ns);
+DWORD WINAPI    ClientThread(LPVOID arg);
+int             ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum);
+
 
 /* 패킷 전송 함수 */
 void send_packet(int id, void* p)
@@ -74,6 +58,25 @@ void send_packet(int id, void* p)
         cout << id << "번 클라로 보내줘야할 패킷타입 크기: " << static_cast<int>(packet[0]) << endl;
     }
 }
+
+void send_enter_packet(int to, int id)
+{
+    sc_packet_enter p;
+
+    p.size = sizeof(p);
+    p.type = SC_PACKET_ENTER;
+
+    p.id = id;
+    //EnterCriticalSection(&cs);
+    strcpy_s(p.name, g_tClient[id].name);
+    //LeaveCriticalSection(&cs);
+    p.o_type = 0;
+    p.x = g_tClient[id].x;
+    p.y = g_tClient[id].y;
+
+    send_packet(to, &p);
+}
+
 
 /* 새로운 클라이언트 로그인 패킷 */
 void send_login_ok(int id)
@@ -95,26 +98,10 @@ void send_login_ok(int id)
     p.x = g_tClient[id].x;
     p.y = g_tClient[id].y;
 
+    p.scene_id = SCENEID_TOWN;
+
     /* 로그인 처리 후 해당 클라이언트에게 패킷 전송 */
     send_packet(id, &p);
-}
-
-void send_enter_packet(int to, int id)
-{
-    sc_packet_enter p;
-
-    p.size = sizeof(p);
-    p.type = SC_PACKET_ENTER;
-
-    p.id = id;
-    //EnterCriticalSection(&cs);
-    strcpy_s(p.name, g_tClient[id].name);
-    //LeaveCriticalSection(&cs);
-    p.o_type = 0;
-    p.x = g_tClient[id].x;
-    p.y = g_tClient[id].y;
-
-    send_packet(to, &p);
 }
 
 void send_move_packet(int to, int id)
@@ -172,7 +159,7 @@ void process_move(int id, char dir)
     }
 }
 
-void ProcessPacket(char* ptr,int server_id)
+void ProcessPacket(char* ptr, int server_id)
 {
     switch (ptr[1])
     {
@@ -214,7 +201,7 @@ void ProcessPacket(char* ptr,int server_id)
     }
 }
 
-void process_data(char* net_buf, size_t io_byte,int server_id)
+void process_data(char* net_buf, size_t io_byte, int server_id)
 {
     char* ptr = net_buf;
     static size_t in_packet_size = 0;
@@ -243,11 +230,18 @@ void process_data(char* net_buf, size_t io_byte,int server_id)
     }
 }
 
-int Connect_NewClient(SOCKET ns);
+void send_playerstance_packet(int to ,int id, int stance, int dir)
+{
+    sc_packet_playerstance p;
+    p.size          = sizeof(p);
+    p.type          = SC_PACKET_PLAYERSTANCE;
+    p.id            = id;
+    p.cur_stance    = stance;
+    p.cur_dir       = dir;
 
+    send_packet(to, &p);
+}
 
-DWORD WINAPI ClientThread(LPVOID arg);
-int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum);
 
 int main(int argc, char* argv[])
 {
@@ -341,7 +335,7 @@ int main(int argc, char* argv[])
         hThread = CreateThread(NULL,                    // 핸들 상속과 보안 디스크립터 정보.
                                0,                       // 스레드에 할당되는 스택 크기. 기본 값은 1MB.
                                ClientThread,            // 스레드 함수의 시작 주소.
-                               (LPVOID)server_id,   // 스레드 함수 전달 인자. 
+                               (LPVOID)server_id,       // 스레드 함수 전달 인자. 
                                0,                       // 스레드 생성을 제어하는 값.  0 또는 CREATE_SUSPENDED
                                NULL);                   // DWORD변수를 전달하면 스레드 ID가 저장됨. 필요 없다면 NULL.
         
@@ -374,11 +368,11 @@ DWORD __stdcall ClientThread(LPVOID arg)
       /*__________________________________________________________________________________________________________
         [ Data Receive ] :: Server <---- Client
         ____________________________________________________________________________________________________________*/
-        retval = ReceiveData(g_tClient[server_id].m_sock,     // 통신할 대상과 연결된 소켓.
-                             g_tClient[server_id].m_packet_buf,// 받은 데이터를 저장할 버퍼의 주소.
-                             sizeof(g_tClient[server_id].m_packet_buf),// 수신 버퍼로부터 복사할 최대 데이터의 크기.
+        retval = ReceiveData(g_tClient[server_id].m_sock,               // 통신할 대상과 연결된 소켓.
+                             g_tClient[server_id].m_packet_buf,         // 받은 데이터를 저장할 버퍼의 주소.
+                             sizeof(g_tClient[server_id].m_packet_buf), // 수신 버퍼로부터 복사할 최대 데이터의 크기.
                              0,
-                             ntohs(tClientAddr.sin_port));    // 클라이언트 포트번호.
+                             ntohs(tClientAddr.sin_port));              // 클라이언트 포트번호.
         if (SOCKET_ERROR == retval)
         {
             err_display("recv()");
@@ -397,11 +391,11 @@ DWORD __stdcall ClientThread(LPVOID arg)
         {
             /* 로그인 확인 처리 */
             cs_packet_login* p = reinterpret_cast<cs_packet_login*>(g_tClient[server_id].m_packet_buf);
-           
+
             //EnterCriticalSection(&cs);
             strcpy_s(g_tClient[server_id].name, p->name);
             //LeaveCriticalSection(&cs);
-            
+
             /* 로그인 확인 처리 완료 후 작업 */
             send_login_ok(server_id);
 
@@ -422,13 +416,41 @@ DWORD __stdcall ClientThread(LPVOID arg)
 
         case CS_PACKET_MOVE:
         {
+            cout << "CS_PACKET_MOVE" << endl;
             cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
             process_move(server_id, p->direction);
+        }
+        break;
+
+        // Scene ID
+        case CS_PACKET_SCENECHANGE:
+        {
+            cs_packet_scenechange* p = reinterpret_cast<cs_packet_scenechange*>(g_tClient[server_id].m_packet_buf);
+            g_tClient[server_id].scene_id = p->scene_id;
+
+        }
+        break;
+
+        // Player Stance & Dir
+        case CS_PACKET_PLAYERSTANCE:
+        {
+            cout << "CS_PACKET_PLAYERSTANCE"<< endl;
+            cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(g_tClient[server_id].m_packet_buf);
+            g_tClient[server_id].cur_stance = p->cur_stance;
+            g_tClient[server_id].cur_dir    = p->cur_dir;
+
+            for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+            {
+                if (i != server_id)
+                    send_playerstance_packet(i, server_id, p->cur_stance, p->cur_dir);
+            }
+
         }
         break;
         default:
             break;
         }
+
     }
 
     // Close Socket
@@ -468,24 +490,21 @@ int Connect_NewClient(SOCKET ns)
         //LeaveCriticalSection(&cs);
 
         /* 2) 게임 콘텐츠 */
-        g_tClient[i].att = 0;
-        g_tClient[i].exp = 0;
-        g_tClient[i].hp = 0;
-        g_tClient[i].mp = 0;
-        g_tClient[i].level = 0;
-        g_tClient[i].sp = 0;
-        g_tClient[i].speed = 0;
+        g_tClient[i].att        = 0;
+        g_tClient[i].exp        = 0;
+        g_tClient[i].hp         = 0;
+        g_tClient[i].mp         = 0;
+        g_tClient[i].level      = 0;
+        g_tClient[i].sp         = 0;
+        g_tClient[i].speed      = 0;
+
+        g_tClient[i].scene_id   = SCENEID_TOWN;
+        g_tClient[i].cur_stance = STANCE_IDLE;
+        g_tClient[i].cur_dir    = DIR_DOWN;
 
         /* 새로운 플레이어의 초기 위치 값 설정 */
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<int> posX(260, WORLD_WIDTH - 300);
-        uniform_int_distribution<int> posY(260, WORLD_HEIGHT - 300);
-
-        /*g_tClient[i].x= (float)posX(gen);
-        g_tClient[i].y = (float)posY(gen);*/
-        g_tClient[i].x = 400.f;
-        g_tClient[i].y = 400.f;
+        g_tClient[i].x = 1005.f;
+        g_tClient[i].y = 555.f;
 
     }
     return i;

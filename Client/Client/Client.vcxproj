@@ -164,6 +164,7 @@
     <ClInclude Include="ComboCnt.h" />
     <ClInclude Include="COthers.h" />
     <ClInclude Include="Cow.h" />
+    <ClInclude Include="PacketMgr.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="DmgBox.h" />
     <ClInclude Include="Dungeon.h" />
@@ -245,6 +246,7 @@
     <ClCompile Include="ComboCnt.cpp" />
     <ClCompile Include="COthers.cpp" />
     <ClCompile Include="Cow.cpp" />
+    <ClCompile Include="PacketMgr.cpp" />
     <ClCompile Include="DmgBox.cpp" />
     <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="ElectricBolt.cpp" />

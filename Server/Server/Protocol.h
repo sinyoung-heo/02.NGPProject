@@ -96,70 +96,94 @@ namespace PROTOCOL_TEST
     constexpr u_int SERVER_PORT = 9000;
     constexpr char SERVER_IP[32] = "127.0.0.1";
 
-    constexpr int MAX_BUF_SIZE = 1024;
-    constexpr int MAX_ID_LEN = 64;
-    constexpr int MAX_PLAYER = 3;
-    constexpr int WORLD_WIDTH = 800;
-    constexpr int WORLD_HEIGHT = 600;
-    constexpr int MAX_STR_LEN = 100;
+    constexpr int MAX_BUF_SIZE  = 1024;
+    constexpr int MAX_ID_LEN    = 64;
+    constexpr int MAX_PLAYER    = 3;
+    constexpr int WORLD_WIDTH   = 800;
+    constexpr int WORLD_HEIGHT  = 600;
+    constexpr int MAX_STR_LEN   = 100;
 
 #pragma pack(push,1)
-    constexpr char SC_PACKET_LOGIN_OK = 0;
-    constexpr char SC_PACKET_MOVE = 1;
-    constexpr char SC_PACKET_ENTER = 2;
-    constexpr char SC_PACKET_LEAVE = 3;
+    constexpr char SC_PACKET_LOGIN_OK       = 0;
+    constexpr char SC_PACKET_MOVE           = 1;
+    constexpr char SC_PACKET_ENTER          = 2;
+    constexpr char SC_PACKET_LEAVE          = 3;
+    constexpr char SC_PACKET_PLAYERSTANCE   = 4;
 
-    constexpr char CS_PACKET_LOGIN = 0;
-    constexpr char CS_PACKET_MOVE = 1;
+    constexpr char CS_PACKET_LOGIN          = 0;
+    constexpr char CS_PACKET_MOVE           = 1;
+    constexpr char CS_PACKET_SCENECHANGE    = 2;
+    constexpr char CS_PACKET_PLAYERSTANCE   = 3;
 
-    /* SERVER -> CLIENT */
+
+    // SERVER -> CLIENT
     struct sc_packet_login_ok
     {
-        char size;
-        char type;
-        int level;
-        int id;
-        float x, y;
-        int hp;
-        int mp;
-        int exp;
-        int sp;
-        int att;
-        float  speed;
+        char    size;
+        char    type;
+
+        int     level;
+        int     id;
+        float   x, y;
+        int     hp;
+        int     mp;
+        int     exp;
+        int     sp;
+        int     att;
+        float   speed;
+        char    scene_id;
     };
 
     struct sc_packet_move
     {
-        char size;
-        char type;
-        int id;
-        float x, y;
+        char    size;
+        char    type;
+
+        int     id;
+        float   x, y;
     };
 
     struct sc_packet_enter
     {
-        char size;
-        char type;
-        int id;
-        char name[MAX_ID_LEN];
-        char o_type;
-        float x, y;
+        char    size;
+        char    type;
+
+        int     id;
+        char    name[MAX_ID_LEN];
+        char    o_type;
+        float   x, y;
     };
 
     struct sc_packet_leave
     {
-        char size;
-        char type;
-        int id;
+        char    size;
+        char    type;
+
+        int     id;
     };
 
-    /* CLIENT -> SERVER */
+
+    struct sc_packet_playerstance
+    {
+        char size;
+        char type;
+
+        int     id;
+        int     cur_stance;
+        int     cur_dir;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+
+    // CLIENT -> SERVER
     struct cs_packet_login
     {
         char size;
         char type;
+
         char name[MAX_ID_LEN];
     };
+
 
     constexpr char MV_UP = 0;
     constexpr char MV_DOWN = 1;
@@ -170,7 +194,46 @@ namespace PROTOCOL_TEST
     {
         char size;
         char type;
+
         char direction;
+    };
+
+
+    constexpr char SCENEID_TOWN     = 0;
+    constexpr char SCENEID_STORE    = SCENEID_TOWN + 1;
+    constexpr char SCENEID_DUNGEON  = SCENEID_TOWN + 2;
+    constexpr char SCENEID_BOSS     = SCENEID_TOWN + 3;
+    constexpr char SCENEID_FIELD    = SCENEID_TOWN + 4;
+
+    struct cs_packet_scenechange
+    {
+        char size;
+        char type;
+
+        char scene_id;
+    };
+
+
+
+    constexpr char STANCE_IDLE      = 0;
+    constexpr char STANCE_WALK      = 1;
+    constexpr char STANCE_RUN       = 2;
+    constexpr char STANCE_ATTACK    = 3;
+    constexpr char STANCE_SKILL     = 4;
+    constexpr char STANCE_HIT       = 5;
+
+    constexpr char DIR_DOWN         = 0;
+    constexpr char DIR_UP           = 7;
+    constexpr char DIR_LEFT         = 1;
+    constexpr char DIR_RIGHT        = 4;
+
+    struct cs_packet_playerstance
+    {
+        char size;
+        char type;
+
+        char cur_stance;
+        char cur_dir;
     };
 #pragma pack(pop)
 }

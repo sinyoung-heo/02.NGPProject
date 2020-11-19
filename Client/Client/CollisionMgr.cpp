@@ -218,24 +218,39 @@ bool CCollisionMgr::CollisionTile(CObj * pTile, CObj * pPlayer)
 			break;
 		case 2:
 			CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_TOWN);
+			CPacketMgr::GetInstance()->SendPlayerSceneID(SCENEID_TOWN);
 			return true;
+
 			break;
+
 		case 3:
 			CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_STORE);
+			CPacketMgr::GetInstance()->SendPlayerSceneID(SCENEID_STORE);
 			return true;
+
 			break;
+
 		case 4:
 			CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_FIELD);
+			CPacketMgr::GetInstance()->SendPlayerSceneID(SCENEID_FIELD);
 			return true;
+
 			break;
+
 		case 5:
 			CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_DUNGEON);
+			CPacketMgr::GetInstance()->SendPlayerSceneID(SCENEID_DUNGEON);
 			return true;
+
 			break;
+
 		case 6:
 			CSceneMgr::GetInstance()->SceneChange(CSceneMgr::SC_BOSS);
+			CPacketMgr::GetInstance()->SendPlayerSceneID(SCENEID_BOSS);
 			return true;
+
 			break;
+
 		}
 	}
 

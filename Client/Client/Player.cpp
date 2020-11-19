@@ -143,6 +143,10 @@ void CPlayer::Initialize()
 
 	m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 	m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
+
+	m_eCurScene = CSceneMgr::SCENE::SC_TOWN;
+	m_eCurDir = ObjDir::DOWN;
+	m_ePreDir = m_eCurDir;
 }
 
 void CPlayer::LateInit()
@@ -180,37 +184,6 @@ int CPlayer::Update()
 
 	if (m_bIsDead)
 		return DEAD_OBJ;
-
-	char net_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
-
-	/*int retval = ReceiveData(g_hSocket,
-						 (char*)&net_buf,
-						 MAX_BUF_SIZE,
-						 0);*/
-
-	int retval = recv(g_hSocket, net_buf, MAX_BUF_SIZE, 0);
-
-	if (retval == SOCKET_ERROR)
-	{
-		int state = WSAGetLastError();
-		if (state != WSAEWOULDBLOCK)
-		{
-			wchar_t temp[30] = L"Client Socket Recieve Failed";
-			LPCWSTR tempMsg = temp;
-			LPVOID	lpMsgBuf;
-			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-			MessageBox(NULL, (LPCTSTR)lpMsgBuf, tempMsg, MB_ICONERROR);
-			LocalFree(lpMsgBuf);
-			exit(1);
-		}
-	}
-
-	// 데이터 수신 성공
-	if (retval > 0)
-	{
-		// 패킷 재조립
-		process_data(net_buf, static_cast<size_t>(retval));
-	}
 
 	// Player Key Input.
 	KeyInput();
@@ -335,6 +308,7 @@ void CPlayer::LateUpdate()
 	/*애니메이션 함수.*/
 	CObj::MoveFrame();
 	SceneChange();
+	DirChange();
 	IsOffSet();
 
 	/*레벨업 검사.*/
@@ -481,6 +455,7 @@ void CPlayer::KeyInput()
 	/*__________________________________________________________________________________________________________
 	[ Player Move - RUN ]
 	____________________________________________________________________________________________________________*/
+#pragma region CLIENT DATA
 	//if (KEY_PRESSING('A'))
 	//{
 	//	// 공격 방향 설정
@@ -717,43 +692,47 @@ void CPlayer::KeyInput()
 		m_eCurStance = IDLE;
 	else if (KEY_UP('S'))
 		m_eCurStance = IDLE;*/
-
-
-
+#pragma endregion
 
 	if (KEY_PRESSING('A') && g_bIsActive)
 	{
-		send_move_packet(MV_LEFT);
-		m_pFrameKey = L"Player_Left_";
-		m_eCurStance = RUN;
+		CPacketMgr::GetInstance()->SendPlayerMovePacket(MV_LEFT);
+		m_pFrameKey		= L"Player_Left_";
+		m_eCurStance	= RUN;
+		m_eCurDir		= ObjDir::LEFT;
 	}
 	else if (KEY_PRESSING('D') && g_bIsActive)
 	{
-		send_move_packet(MV_RIGHT);
-		m_pFrameKey = L"Player_Right_";
-		m_eCurStance = RUN;
+		CPacketMgr::GetInstance()->SendPlayerMovePacket(MV_RIGHT);
+
+		m_pFrameKey		= L"Player_Right_";
+		m_eCurStance	= RUN;
+		m_eCurDir		= ObjDir::RIGHT;
 	}
 	else if (KEY_PRESSING('W') && g_bIsActive)
 	{
-		send_move_packet(MV_UP);
-		m_pFrameKey = L"Player_Up_";
-		m_eCurStance = RUN;
+		CPacketMgr::GetInstance()->SendPlayerMovePacket(MV_UP);
+
+		m_pFrameKey		= L"Player_Up_";
+		m_eCurStance	= RUN;
+		m_eCurDir		= ObjDir::UP;
 	}
 	else if (KEY_PRESSING('S') && g_bIsActive)
 	{
-		send_move_packet(MV_DOWN);
-		m_pFrameKey = L"Player_Down_";
-		m_eCurStance = RUN;
+		CPacketMgr::GetInstance()->SendPlayerMovePacket(MV_DOWN);
+		m_pFrameKey		= L"Player_Down_";
+		m_eCurStance	= RUN;
+		m_eCurDir		= ObjDir::DOWN;
 	}
 
 	else if (KEY_UP('A'))
-	m_eCurStance = IDLE;
+		m_eCurStance = IDLE;
 	else if (KEY_UP('D'))
-	m_eCurStance = IDLE;
+		m_eCurStance = IDLE;
 	else if (KEY_UP('W'))
-	m_eCurStance = IDLE;
+		m_eCurStance = IDLE;
 	else if (KEY_UP('S'))
-	m_eCurStance = IDLE;
+		m_eCurStance = IDLE;
 
 
 
@@ -943,50 +922,66 @@ void CPlayer::SceneChange()
 		switch (m_eCurStance)
 		{
 		case IDLE:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 4;
-			m_tFrame.iScene = 5;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 4;
+			m_tFrame.iScene			= 5;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case WALK:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 8;
-			m_tFrame.iScene = 6;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 8;
+			m_tFrame.iScene			= 6;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case RUN:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 9;
-			m_tFrame.iScene = 3;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 9;
+			m_tFrame.iScene			= 3;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case ATTACK:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 5;
-			m_tFrame.iScene = 0;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 5;
+			m_tFrame.iScene			= 0;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case SKILL:
-			m_tFrame.iFrameStart = 0;
-			m_tFrame.iFrameEnd = 8;
-			m_tFrame.iScene = 2;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 100;
+			m_tFrame.iFrameStart	= 0;
+			m_tFrame.iFrameEnd		= 8;
+			m_tFrame.iScene			= 2;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 100;
 			break;
 		case HIT:
-			m_tFrame.iFrameStart = 1;
-			m_tFrame.iFrameEnd = 1;
-			m_tFrame.iScene = 1;
-			m_tFrame.dwOldTime = GetTickCount();
-			m_tFrame.dwFrameSpd = 200;
+			m_tFrame.iFrameStart	= 1;
+			m_tFrame.iFrameEnd		= 1;
+			m_tFrame.iScene			= 1;
+			m_tFrame.dwOldTime		= GetTickCount();
+			m_tFrame.dwFrameSpd		= 200;
 			break;
 		}
 
 		m_ePreStance = m_eCurStance;
+
+		// Send Packet.
+		CPacketMgr::GetInstance()->SendPlayerStance(static_cast<int>(m_eCurStance), 
+													static_cast<int>(m_eCurDir));
+	}
+}
+
+void CPlayer::DirChange()
+{
+	if (m_eCurDir != m_ePreDir)
+	{
+		m_ePreDir = m_eCurDir;
+
+		// Send Packet.
+		CPacketMgr::GetInstance()->SendPlayerStance(static_cast<int>(m_eCurStance),
+													static_cast<int>(m_eCurDir));
 	}
 }
 

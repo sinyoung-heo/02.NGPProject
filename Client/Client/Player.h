@@ -32,6 +32,8 @@ private:
 	// 11.06 KeyInput Ãß°¡.
 	void KeyInput();
 	void SceneChange();
+	void DirChange();
+
 	void IsOffSet();
 	void IsLevelUp();
 

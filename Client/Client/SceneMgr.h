@@ -8,7 +8,8 @@ class CSceneMgr
 	DECLARE_SINGLETON(CSceneMgr)
 
 public:
-	enum SCENE {
+	enum SCENE 
+	{
 		SC_LOGO, SC_MENU, SC_EDIT, SC_TOWN,
 		SC_FIELD, SC_DUNGEON, SC_BOSS, SC_STORE,SC_END
 	};

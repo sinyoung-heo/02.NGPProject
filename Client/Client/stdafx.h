@@ -47,6 +47,7 @@ using namespace PROTOCOL_TEST;
 
 #include "AbstractFactory.h"
 #include "ObjMgr.h"
+#include "PacketMgr.h"
 #include "MathMgr.h"
 #include "KeyMgr.h"
 #include "CollisionMgr.h"

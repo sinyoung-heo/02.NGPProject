@@ -1,4 +1,6 @@
 #pragma once
+#include "SceneMgr.h"
+
 class CObj
 {
 public:
@@ -14,6 +16,7 @@ public:
 	float GetAttackXPos() { return m_fAttackX; }
 	float GetAttackYPos() { return m_fAttackY; }
 	Layer::ID GetLayer() { return m_eLayer; }
+	const FRAME& GetFrame() { return m_tFrame; }
 
 public:
 	void SetInfo(const INFO& rInfo) 
@@ -26,15 +29,17 @@ public:
 	void SetPos(float _x, float _y) { m_tInfo.fX = _x, m_tInfo.fY = _y; }
 	void SetColPos(float _x, float _y) { m_tColInfo.fX = _x, m_tColInfo.fY = _y; }
 	void SetAngle(float _angle) { m_fAngle = _angle; }
-
 	void SetHp(int _dmg) { m_tInfo.iHp -= _dmg; }
 	void SetExp(int _exp) { m_tInfo.iExp += _exp; }
-
 	void SetMoney(int _money) { m_tInfo.iGold += _money; }
 	void SetMaxHp(int _maxhp) { m_tInfo.iMaxHp += _maxhp; }
 	void SetMaxMp(int _maxmp) { m_tInfo.iMaxMp += _maxmp; }
 	void SetMaxSp(int _maxsp) { m_tInfo.iMaxSp += _maxsp; }
 	void SetAtt(int _att)  { m_tInfo.iAtt += _att; }
+	void SetName(char* pName) { strcpy_s(m_szName, pName); }
+	void SetCurScene(const CSceneMgr::SCENE& eID) { m_eCurScene = eID; }
+
+	const CSceneMgr::SCENE& GetSceneID() { return m_eCurScene; }
 
 	/*충돌 밀어내기 좌표세팅*/
 	void AddSetXpos(float _x) { m_tInfo.fX += _x; }
@@ -58,7 +63,6 @@ public:
 	void bIsDead() { m_bIsDead = true; }
 
 	void MoveFrame();
-
 protected:
 	// Server Data Receive.
 	int ReceiveData(SOCKET s, char* buf, int len, int flags);
@@ -103,7 +107,12 @@ protected:
 	Layer::ID m_eLayer;
 
 	/* server */
-	char m_szName[MAX_ID_LEN];
-	char m_recv_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
+	char m_szName[MAX_ID_LEN] = "";
+	char m_recv_buf[PROTOCOL_TEST::MAX_BUF_SIZE] = "";
+
+
+	CSceneMgr::SCENE	m_eCurScene = CSceneMgr::SC_END;
+	ObjDir::DIR			m_eCurDir = ObjDir::DOWN;	// 현재 방향.
+	ObjDir::DIR			m_ePreDir = ObjDir::DOWN;	// 이전 방향.
 };
 

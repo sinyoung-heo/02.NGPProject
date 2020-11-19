@@ -208,6 +208,9 @@
     <Filter Include="01.GameObject\08.Others">
       <UniqueIdentifier>{1347ba37-5c76-46ae-a3cb-a4c98043fbd7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="97.Manager\PacketMgr">
+      <UniqueIdentifier>{9f0565f0-2605-427c-b0cb-b1f4d610a458}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -453,6 +456,9 @@
     <ClInclude Include="COthers.h">
       <Filter>01.GameObject\08.Others</Filter>
     </ClInclude>
+    <ClInclude Include="PacketMgr.h">
+      <Filter>97.Manager\PacketMgr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -677,6 +683,9 @@
     </ClCompile>
     <ClCompile Include="COthers.cpp">
       <Filter>01.GameObject\08.Others</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketMgr.cpp">
+      <Filter>97.Manager\PacketMgr</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
