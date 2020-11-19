@@ -203,34 +203,36 @@ int CMainGame::Connect_Server()
 
 	char* p = reinterpret_cast<char*>(&l_packet);
 
+	Sleep(1000);
+
 	int iSendBytes = send(g_hSocket, p, p[0], 0);
 
 	if (iSendBytes == SOCKET_ERROR)
 	{
-		int state = WSAGetLastError();
-		if (state != WSAEWOULDBLOCK)
-		{
-			WCHAR* h_mess;
-			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-				NULL, WSAGetLastError(),
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPWSTR)&h_mess, 0, NULL);
-			cout << "WSAConnect";
-			wcout << L"에러 -> " << h_mess << endl;
-			while (true);
-			LocalFree(h_mess);
+		//int state = WSAGetLastError();
+		//if (state != WSAEWOULDBLOCK)
+		//{
+		//	WCHAR* h_mess;
+		//	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		//		NULL, WSAGetLastError(),
+		//		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		//		(LPWSTR)&h_mess, 0, NULL);
+		//	cout << "Send";
+		//	wcout << L"에러 -> " << h_mess << endl;
+		//	while (true);
+		//	LocalFree(h_mess);
 
-			closesocket(g_hSocket);
-			return -1;
-		}
-		/*wchar_t temp[30] = L"Client Socket Send Failed";
+		//	closesocket(g_hSocket);
+		//	return -1;
+		//}
+		wchar_t temp[30] = L"Client Socket Send Failed";
 		LPCWSTR tempMsg = temp;
 		LPVOID	lpMsgBuf;
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
 		MessageBox(NULL, (LPCTSTR)lpMsgBuf, tempMsg, MB_ICONERROR);
 		LocalFree(lpMsgBuf);
 		closesocket(g_hSocket);
-		exit(1);*/
+		exit(1);
 	}
 	cout << "Login packet 전송완료" << endl;
 
