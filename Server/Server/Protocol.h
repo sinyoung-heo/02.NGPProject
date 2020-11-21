@@ -93,6 +93,9 @@ namespace PROTOCOL
 
 namespace PROTOCOL_TEST
 {
+#define SERVER_NOEVENT 0
+#define SERVER_DEADOBJ 1
+
     constexpr u_int SERVER_PORT = 9000;
     constexpr char SERVER_IP[32] = "127.0.0.1";
 
@@ -103,6 +106,26 @@ namespace PROTOCOL_TEST
     constexpr int WORLD_HEIGHT  = 600;
     constexpr int MAX_STR_LEN   = 100;
 
+    // Monster Type.
+    constexpr int MON_COW                   = 0;
+    constexpr int MON_NINJA                 = 1;
+    constexpr int MON_BORIS                 = 2;
+
+    // Monster Stance.
+    constexpr int MON_STANCE_IDLE           = 0;
+    constexpr int MON_STANCE_RUN            = 1;
+    constexpr int MON_STANCE_ATTACK         = 2;
+    constexpr int MON_STANCE_DEAD           = 3;
+    constexpr int MON_STANCE_SKILL          = 4;
+    constexpr int MON_STANCE_PORTAL_ATTACK  = 5;
+
+    // Monster State.
+    constexpr int MON_STATE_REST            = 0;
+    constexpr int MON_STATE_ANGRY           = 1;
+    constexpr int MON_STATE_RAGE            = 2;
+    constexpr int MON_STATE_CRAZY           = 3;
+
+
 #pragma pack(push,1)
     constexpr char SC_PACKET_LOGIN_OK       = 0;
     constexpr char SC_PACKET_MOVE           = 1;
@@ -110,6 +133,7 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_LEAVE          = 3;
     constexpr char SC_PACKET_SCENECHANGE    = 4;
     constexpr char SC_PACKET_PLAYERSTANCE   = 5;
+    constexpr char SC_PACKET_MONSTERCREATE  = 6;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -182,6 +206,28 @@ namespace PROTOCOL_TEST
         int     id;
         float   x, y;
         int     scene_id;
+    };
+
+    struct sc_packet_monsterinfo
+    {
+        char    size;
+        char    type;
+
+        char    montype;        // Monster Type
+        int     idx;            // Monster Idx
+        int     hp;
+        int     att;
+        int     exp;
+        float   x, y;
+        float   cx, cy;
+        float   speed;
+        float   angle;
+        bool    is_dead;
+
+        char    scene_id;
+        char    cur_stance;
+        char    cur_state;
+        char    cur_dir;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////

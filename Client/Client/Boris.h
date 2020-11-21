@@ -3,8 +3,8 @@
 class CBoris :
 	public CJelly
 {
-	enum STANCE { IDLE, RUN, SKILL, ATTACK, PORTAL_ATTACK, DEAD };
-	enum STATE  { REST, ANGRY, RAGE, CRAZY,END_STATE };
+	enum STANCE { IDLE, RUN, ATTACK, DEAD, SKILL, PORTAL_ATTACK };
+	enum STATE  { REST, ANGRY, RAGE, CRAZY, END_STATE };
 
 public:
 	CBoris();

@@ -2,6 +2,7 @@
 #include <WinSock2.h>
 #include <iostream>
 #include <random>
+#include <list>
 #include "Protocol.h"
 #include "Struct.h"
 
@@ -9,9 +10,22 @@ using namespace std;
 using namespace PROTOCOL;
 using namespace PROTOCOL_TEST;
 
-
-CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER];
+CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER]; // Clinet User Info
 //CRITICAL_SECTION cs;
+
+#pragma region MONSTER
+enum MONID { COW, NINJA, BORIS, MONID_END };
+typedef list<CMonsterInfo*> MONLIST;
+typedef MONLIST::iterator   MONITER;
+MONLIST g_monLst[MONID_END];
+
+
+void            ReadyMonsterInfo();
+void            FreeMonsterInfo();
+DWORD WINAPI    CollisionThread(LPVOID arg);
+void            send_createDungeonMonster(int to);
+#pragma endregion
+
 
 void err_quit(char* msg)
 {
@@ -38,7 +52,6 @@ void err_display(char* msg)
 int             Connect_NewClient(SOCKET ns);
 DWORD WINAPI    ClientThread(LPVOID arg);
 int             ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum);
-
 
 /* 패킷 전송 함수 */
 void send_packet(int id, void* p)
@@ -259,6 +272,9 @@ void send_playerstance_packet(int to ,int id, int stance, int dir)
 
 int main(int argc, char* argv[])
 {
+    // Ready Monster.
+    ReadyMonsterInfo();
+
     // Err_Display() -> 한국어 지원
     wcout.imbue(std::locale("korean"));
 
@@ -359,13 +375,16 @@ int main(int argc, char* argv[])
             CloseHandle(hThread);
     }
 
-    //DeleteCriticalSection(&cs);
+    // DeleteCriticalSection(&cs);
+
+    FreeMonsterInfo();
 
     // CloseSocket.
     closesocket(pListenSocket);
     WSACleanup();
 }
 
+// Client Thread.
 DWORD __stdcall ClientThread(LPVOID arg)
 {
     int retval{ 0 };
@@ -457,11 +476,18 @@ DWORD __stdcall ClientThread(LPVOID arg)
             {
                 g_tClient[server_id].x = 735.f;
                 g_tClient[server_id].y = 555.f;
+
+                // Create Monster - Cow & Ninja
+                send_createDungeonMonster(server_id);
+
             }
             else if (SCENEID_BOSS == p->scene_id)
             {
                 g_tClient[server_id].x = 1125.f;
                 g_tClient[server_id].y = 705.f;
+
+                // Create Monster - Boris.
+
             }
             else if (SCENEID_FIELD == p->scene_id)
             {
@@ -587,4 +613,127 @@ int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum)
         ptr += received;
     }
     return (len - left);
+}
+
+void ReadyMonsterInfo()
+{
+    HANDLE hThread;
+    hThread = CreateThread(NULL,                // 핸들 상속과 보안 디스크립터 정보.
+                           0,                   // 스레드에 할당되는 스택 크기. 기본 값은 1MB.
+                           CollisionThread,     // 스레드 함수의 시작 주소.
+                           nullptr,             // 스레드 함수 전달 인자. 
+                           0,                   // 스레드 생성을 제어하는 값.  0 또는 CREATE_SUSPENDED
+                           NULL);               // DWORD변수를 전달하면 스레드 ID가 저장됨. 필요 없다면 NULL.
+    CloseHandle(hThread);
+
+    // MonsterCow.
+    float pos = 390.f;
+    for (int i = 0; i < 4; ++i)
+    {
+        CMonsterInfo* temp  = new CMonsterInfo;
+        temp->type          = MON_COW;
+        temp->idx           = i;
+        temp->cur_stance    = MON_STANCE_IDLE;
+        temp->cur_state     = MON_STATE_REST;
+        temp->cur_dir       = DIR_LEFT;
+        temp->scene_id      = SCENEID_DUNGEON;
+
+        temp->hp            = 100'000;
+        temp->att           = 10;
+        temp->speed         = 2.5f;
+        temp->exp           = 150;
+        temp->cx            = 256.f;
+        temp->cy            = 256.f;
+        temp->x             = 1230.f;
+        temp->y             = pos;
+        temp->angle         = 90.0f;
+        temp->is_dead       = false;
+        temp->target        = nullptr;
+
+        g_monLst[COW].push_back(temp);
+        pos += 100.f;
+    }
+
+}
+
+void FreeMonsterInfo()
+{
+    for (auto& monLst : g_monLst)
+    {
+        for (auto& pMonInfo : monLst)
+        {
+            if (pMonInfo)
+            {
+                delete pMonInfo;
+                pMonInfo = nullptr;
+            }
+        }
+   }
+}
+
+// Monster Thread.
+DWORD __stdcall CollisionThread(LPVOID arg)
+{
+    while (true)
+    {
+        // Monster Update.
+        for (auto& monLst : g_monLst)
+        {
+            auto iter_begin = monLst.begin();
+            auto iter_end = monLst.end();
+
+            for (; iter_begin != iter_end;)
+            {
+                int iEvent = (*iter_begin)->Update();
+                
+                if (SERVER_DEADOBJ == iEvent)
+                {
+                    if (*iter_begin)
+                    {
+                        delete (*iter_begin);
+                        *iter_begin = nullptr;
+                    }
+                    iter_begin = monLst.erase(iter_begin);
+                }
+                else
+                    ++iter_begin;
+            }
+        }
+
+
+
+    }
+
+    return S_OK;
+}
+
+void send_createDungeonMonster(int to)
+{
+    for (auto& pCow : g_monLst[COW])
+    {
+        sc_packet_monsterinfo p;
+        p.size          = sizeof(p);
+        p.type          = SC_PACKET_MONSTERCREATE;
+       
+        p.montype       = pCow->type;
+        p.idx           = pCow->idx;
+        p.hp            = pCow->hp;
+        p.att           = pCow->att;
+        p.exp           = pCow->exp;
+        p.x             = pCow->x;
+        p.y             = pCow->y;
+        p.cx            = pCow->cx;
+        p.cy            = pCow->cy;
+        p.speed         = pCow->speed;
+        p.angle         = pCow->angle;
+        p.is_dead       = pCow->is_dead;
+
+        p.scene_id      = pCow->scene_id;
+        p.cur_stance    = pCow->cur_stance;
+        p.cur_state     = pCow->cur_state;
+        p.cur_dir       = pCow->cur_dir;
+
+        send_packet(to, &p);
+    }
+
 }

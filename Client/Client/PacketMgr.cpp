@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PacketMgr.h"
 #include "COthers.h"
+#include "Cow.h"
 
 IMPLEMENT_SINGLETON(CPacketMgr)
 
@@ -208,6 +209,32 @@ void CPacketMgr::ProcessPacket(char* ptr)
 				static_cast<COthers*>(g_umap_serverObj[other_id])->SetStance(static_cast<COthers::STANCE>(my_packet->cur_stance));
 				static_cast<COthers*>(g_umap_serverObj[other_id])->SetCurDir(static_cast<ObjDir::DIR>(my_packet->cur_dir));
 			}
+		}
+
+	}
+	break;
+
+	// Create Monster
+	case SC_PACKET_MONSTERCREATE:
+	{
+		sc_packet_monsterinfo* my_packet = reinterpret_cast<sc_packet_monsterinfo*>(ptr);
+		
+		if (MON_COW == my_packet->montype)
+		{
+			CCow* pCow = new CCow;
+			pCow->Initialize();
+			pCow->SetPos(my_packet->x, my_packet->y);
+			pCow->SetIdx(my_packet->idx);
+
+			CObjMgr::GetInstance()->AddObject(pCow, ObjID::MONSTER_COW);
+		}
+		else if (MON_NINJA == my_packet->montype)
+		{
+
+		}
+		else if (MON_BORIS == my_packet->montype)
+		{
+
 		}
 
 	}

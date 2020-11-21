@@ -14,6 +14,7 @@ public:
 public:
 	void SetStanceHIT() { m_eCurStance = HIT, m_bIsHit = true; }
 	void SetStateAngry() { m_eState = ANGRY; }
+	void SetIdx(const int& idx) { m_iIdx = idx; }
 
 public:
 	// CObj을(를) 통해 상속됨
@@ -43,5 +44,7 @@ private:
 	float	m_fAttLen;
 	float	m_fDist;
 
+
+	int		m_iIdx = 0;
 };
 

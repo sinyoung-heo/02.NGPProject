@@ -3,7 +3,7 @@
 class CNinja :
 	public CJelly
 {
-	enum STANCE { IDLE,RUN,SKILL,ATTACK, DEAD };
+	enum STANCE { IDLE, RUN, ATTACK, DEAD, SKILL };
 	enum STATE  { REST, ANGRY, RAGE, END_STATE };
 
 public:

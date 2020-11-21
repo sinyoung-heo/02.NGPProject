@@ -4,24 +4,27 @@ class CCow :
 	public CJelly
 {
 public:
-	enum STANCE { ATTACK, DEAD, IDLE, RUN, END };
-	enum STATE { REST, ANGRY, RAGE, END_STATE };
+	enum STANCE { IDLE, RUN, ATTACK, DEAD, END };
+	enum STATE	{ REST, ANGRY, RAGE, END_STATE };
 
 public:
 	CCow();
 	virtual ~CCow();
 
-
-	virtual void Initialize() override;
-	virtual void LateInit();
-	virtual int Update() override;
-	virtual void LateUpdate() override;
-	virtual void Render(HDC hDC) override;
-	virtual void Release() override;
+public:
+	void			SetStance(const STANCE& eStance) { m_eCurStance = eStance; }
 
 public:
-	void SetStanceHIT() { m_bIsHit = true; }
-	void SetStateAngry() { m_eState = ANGRY; }
+	virtual void	Initialize() override;
+	virtual void	LateInit();
+	virtual int		Update() override;
+	virtual void	LateUpdate() override;
+	virtual void	Render(HDC hDC) override;
+	virtual void	Release() override;
+
+public:
+	void SetStanceHIT()		{ m_bIsHit = true; }
+	void SetStateAngry()	{ m_eState = ANGRY; }
 
 private:
 	void SceneChange();
@@ -40,6 +43,5 @@ private:
 
 	float	m_fAttLen;
 	float	m_fDist;
-
 };
 

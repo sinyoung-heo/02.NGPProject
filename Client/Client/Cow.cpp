@@ -59,7 +59,7 @@ void CCow::Initialize()
 	m_fAttLen = 50.f;
 
 	/*타겟 설정*/
-	m_pTarget = CObjMgr::GetInstance()->GetPlayer();
+	// m_pTarget = CObjMgr::GetInstance()->GetPlayer();
 }
 
 void CCow::LateInit()
@@ -70,88 +70,89 @@ void CCow::LateInit()
 int CCow::Update()
 {
 	CObj::LateInit();
-	if (m_bIsDead)
-	{
 
-		m_eCurStance = DEAD;
-		m_eState = END_STATE;
+	//if (m_bIsDead)
+	//{
 
-		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
-		{
-			m_pTarget->SetExp(m_tInfo.iExp);
+	//	m_eCurStance = DEAD;
+	//	m_eState = END_STATE;
 
-			return DEAD_OBJ;
-		}
-	}
+	//	if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
+	//	{
+	//		m_pTarget->SetExp(m_tInfo.iExp);
 
-	if (m_bIsHit)
-	{
-		/*사망상태이면 사망 모션 실행 후 삭제*/
-		m_eCurStance = IDLE;
+	//		return DEAD_OBJ;
+	//	}
+	//}
 
-		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
-		{	/*애니메이션 끝나면 피격 상태 해제*/
-			m_bIsHit = false;
-		}
-	}
-	else
-	{
-		switch (m_eState)
-		{
-		case REST:
-			m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
-			/*일정 범위 안에 있으면 추격 상태*/
-			if (m_fDist < 250.f)
-				m_eState = ANGRY;
+	//if (m_bIsHit)
+	//{
+	//	/*사망상태이면 사망 모션 실행 후 삭제*/
+	//	m_eCurStance = IDLE;
 
-			break;
-		case ANGRY:
-			ChangeImageKey();
-			m_eCurStance = RUN;
+	//	if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
+	//	{	/*애니메이션 끝나면 피격 상태 해제*/
+	//		m_bIsHit = false;
+	//	}
+	//}
+	//else
+	//{
+	//	switch (m_eState)
+	//	{
+	//	case REST:
+	//		m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
+	//		/*일정 범위 안에 있으면 추격 상태*/
+	//		if (m_fDist < 250.f)
+	//			m_eState = ANGRY;
 
-			/*Target 추적.*/
-			m_fAngle = CMathMgr::CalcRadian(m_pTarget, this);
+	//		break;
+	//	case ANGRY:
+	//		ChangeImageKey();
+	//		m_eCurStance = RUN;
 
-			m_tInfo.fX += cosf(m_fAngle)*m_fSpeed;
-			m_tInfo.fY -= sinf(m_fAngle)*m_fSpeed;
-			CObj::UpdateColXYPos();
+	//		/*Target 추적.*/
+	//		m_fAngle = CMathMgr::CalcRadian(m_pTarget, this);
 
-			m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
-			if (m_fDist < 60.f)	//일정 거리 가까워지면  RAGE상태로 전환.
-				m_eState = RAGE;
+	//		m_tInfo.fX += cosf(m_fAngle)*m_fSpeed;
+	//		m_tInfo.fY -= sinf(m_fAngle)*m_fSpeed;
+	//		CObj::UpdateColXYPos();
 
-			break;
-		case RAGE:
-			ChangeImageKey();
-			m_eCurStance = ATTACK;
+	//		m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
+	//		if (m_fDist < 60.f)	//일정 거리 가까워지면  RAGE상태로 전환.
+	//			m_eState = RAGE;
 
-			m_fAngle = CMathMgr::CalcRadian(m_pTarget, this);
+	//		break;
+	//	case RAGE:
+	//		ChangeImageKey();
+	//		m_eCurStance = ATTACK;
 
-			m_fAttackX = m_tInfo.fX + cosf(m_fAngle) * m_fAttLen;
-			m_fAttackY = m_tInfo.fY - sinf(m_fAngle) * m_fAttLen;
+	//		m_fAngle = CMathMgr::CalcRadian(m_pTarget, this);
 
-			/*공격 오브젝트 생성*/
-			if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
-			{
-				if (dwAttackTime2 + 100 <= GetTickCount())
-				{
-					CSoundMgr::GetInstance()->PlaySound(L"Cow.wav", CSoundMgr::ATTACK_EFFECT);
+	//		m_fAttackX = m_tInfo.fX + cosf(m_fAngle) * m_fAttLen;
+	//		m_fAttackY = m_tInfo.fY - sinf(m_fAngle) * m_fAttLen;
+
+	//		/*공격 오브젝트 생성*/
+	//		if (m_tFrame.iFrameStart == m_tFrame.iFrameEnd)
+	//		{
+	//			if (dwAttackTime2 + 100 <= GetTickCount())
+	//			{
+	//				CSoundMgr::GetInstance()->PlaySound(L"Cow.wav", CSoundMgr::ATTACK_EFFECT);
 
 
-					CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMonSkillColBox>::CreateColBox(50.f, 50.f, m_fAttackX, m_fAttackY, 30),
-						ObjID::MON_ATT_COLBOX);
+	//				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMonSkillColBox>::CreateColBox(50.f, 50.f, m_fAttackX, m_fAttackY, 30),
+	//					ObjID::MON_ATT_COLBOX);
 
-					dwAttackTime2 = GetTickCount();
-				}
-			}
+	//				dwAttackTime2 = GetTickCount();
+	//			}
+	//		}
 
-			m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
-			if (m_fDist > 85.f)	//일정 거리 멀어지면  ANGRY상태로 전환.
-				m_eState = ANGRY;
+	//		m_fDist = CMathMgr::CalcDistance(m_pTarget, this);
+	//		if (m_fDist > 85.f)	//일정 거리 멀어지면  ANGRY상태로 전환.
+	//			m_eState = ANGRY;
 
-			break;
-		}
-	}
+	//		break;
+	//	}
+	//}
 
 
 	return NO_EVENT;
@@ -240,11 +241,19 @@ void CCow::ChangeImageKey()
 
 	/*몬스터 방향 전환.*/
 	if (m_fAngle >= 0 && m_fAngle < 90)
+	{
 		m_pFrameKey = L"MonsterC_RU";
+	}
 	if (m_fAngle >= 90 && m_fAngle < 180)
+	{
 		m_pFrameKey = L"MonsterC_LU";
+	}
 	if (m_fAngle >= -90 && m_fAngle < 0)
+	{
 		m_pFrameKey = L"MonsterC_RD";
+	}
 	if (m_fAngle >= -180 && m_fAngle < -90)
+	{
 		m_pFrameKey = L"MonsterC_LD";
+	}
 }

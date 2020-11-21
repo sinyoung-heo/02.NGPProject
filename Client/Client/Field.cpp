@@ -26,12 +26,12 @@ void CField::Initialize()
 	CObjMgr::GetInstance()->SetPlayerPos(1515.f, 1035.f);
 
 
-	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1545.f, 1155.f),
-		ObjID::MONSTER);
-	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1695.f, 1155.f),
-		ObjID::MONSTER);
-	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1755.f, 1155.f),
-		ObjID::MONSTER);
+	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1545.f, 1155.f),
+	//	ObjID::MONSTER);
+	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1695.f, 1155.f),
+	//	ObjID::MONSTER);
+	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CJelly>::CreateObj(1755.f, 1155.f),
+	//	ObjID::MONSTER);
 
 	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CPotalTown>::CreateObj(1615.f, 910.f),
 		ObjID::EFFECT);
