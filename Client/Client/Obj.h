@@ -38,6 +38,7 @@ public:
 	void SetAtt(int _att)  { m_tInfo.iAtt += _att; }
 	void SetName(char* pName) { strcpy_s(m_szName, pName); }
 	void SetCurScene(const CSceneMgr::SCENE& eID) { m_eCurScene = eID; }
+	void SetIsDead(const bool& bIsDead) { m_bIsDead = bIsDead; }
 
 	const CSceneMgr::SCENE& GetSceneID() { return m_eCurScene; }
 

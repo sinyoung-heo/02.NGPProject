@@ -61,19 +61,36 @@ private:
         {
         case MON_STATE_REST:
         {
+            dist = CalcDist();
+
+            if (dist < 250.0f)
+                cur_state = MON_STATE_ANGRY;
 
         }
         break;
 
         case MON_STATE_ANGRY:
         {
+            // Target 추격.
+            cur_stance = MON_STANCE_RUN;
 
+            x += cosf(angle) * speed;
+            y -= sinf(angle) * speed;
+
+            dist = CalcDist();
+            if (dist < 75.0f)
+                cur_state = MON_STATE_RAGE;
         }
         break;
 
         case MON_STATE_RAGE:
         {
+            // Target 공격.
+            cur_stance = MON_STANCE_ATTACK;
 
+            dist = CalcDist();
+            if (dist > 100.0f)
+                cur_state = MON_STATE_ANGRY;
         }
         break;
 
@@ -135,6 +152,14 @@ private:
         }
     }
 
+    float CalcDist()
+    {
+        float w = target->x - x;
+        float h = target->y - y;
+
+        return sqrtf(w * w + h * h);
+    }
+
     float CalcDegree()
     {
         float w = target->x - x;
@@ -168,4 +193,5 @@ public:
     char    cur_dir     = 0;
 
     CINFO*  target      = nullptr;
+    float   dist        = 0.0f;
 };

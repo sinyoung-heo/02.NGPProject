@@ -217,7 +217,7 @@ void CPacketMgr::ProcessPacket(char* ptr)
 	// Create Monster
 	case SC_PACKET_MONSTERCREATE:
 	{
-		sc_packet_monsterinfo* my_packet = reinterpret_cast<sc_packet_monsterinfo*>(ptr);
+		sc_packet_monstercreateinfo* my_packet = reinterpret_cast<sc_packet_monstercreateinfo*>(ptr);
 		
 		if (MON_COW == my_packet->montype)
 		{
@@ -225,6 +225,8 @@ void CPacketMgr::ProcessPacket(char* ptr)
 			pCow->Initialize();
 			pCow->SetPos(my_packet->x, my_packet->y);
 			pCow->SetIdx(my_packet->idx);
+			pCow->SetStance(static_cast<CCow::STANCE>(my_packet->cur_stance));
+			pCow->SetAngle(my_packet->angle);
 
 			CObjMgr::GetInstance()->AddObject(pCow, ObjID::MONSTER_COW);
 		}
@@ -239,6 +241,40 @@ void CPacketMgr::ProcessPacket(char* ptr)
 
 	}
 	break;
+
+	// Recv MonsterInfo
+	case SC_PACKET_MONSTERINFO:
+	{
+		sc_packet_monsterinfo* my_packet = reinterpret_cast<sc_packet_monsterinfo*>(ptr);
+		
+		if (MON_COW == my_packet->montype)
+		{
+			OBJLIST monLst = CObjMgr::GetInstance()->GetObjList(ObjID::MONSTER_COW);
+
+			// 받은 패킷의 index와 같은 번호인 monster의 정보를 set.
+			for (auto& pCow : monLst)
+			{
+				if (my_packet->idx == static_cast<CCow*>(pCow)->GetIdx())
+				{
+					static_cast<CCow*>(pCow)->SetPos(my_packet->x, my_packet->y);
+					static_cast<CCow*>(pCow)->SetAngle(my_packet->angle);
+					static_cast<CCow*>(pCow)->SetStance(static_cast<CCow::STANCE>(my_packet->cur_stance));
+					static_cast<CCow*>(pCow)->SetHpInfo(my_packet->hp);
+					pCow->SetIsDead(my_packet->is_dead);
+				}
+			}
+		}
+		else if (MON_NINJA == my_packet->montype)
+		{
+
+		}
+		else if (MON_BORIS == my_packet->montype)
+		{
+
+		}
+	}
+	break;
+
 
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);

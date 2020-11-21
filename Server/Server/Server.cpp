@@ -23,6 +23,7 @@ MONLIST g_monLst[MONID_END];
 void            ReadyMonsterInfo();
 void            FreeMonsterInfo();
 DWORD WINAPI    CollisionThread(LPVOID arg);
+void            send_monsterinfo(int to, CMonsterInfo* src);
 void            send_createDungeonMonster(int to);
 #pragma endregion
 
@@ -67,8 +68,10 @@ void send_packet(int id, void* p)
         if (SOCKET_ERROR == ret)
             err_quit("send()");
 
+#ifdef SHOW_LOG
         cout << id << "번 클라로 보내는 패킷 타입-" << static_cast<int>(packet[1]) << endl;
         cout << id << "번 클라로 보내줘야할 패킷타입 크기: " << static_cast<int>(packet[0]) << endl;
+#endif
     }
 }
 
@@ -164,7 +167,9 @@ void process_move(int id, char dir)
         x += 2.5f;
         break;
     default:
+#ifdef SHOW_LOG
         cout << "Unknown Direction in CS_MOVE packet." << endl;
+#endif
         while (true);
 
         break;
@@ -449,7 +454,9 @@ DWORD __stdcall ClientThread(LPVOID arg)
 
         case CS_PACKET_MOVE:
         {
+#ifdef SHOW_LOG
             cout << "CS_PACKET_MOVE" << endl;
+#endif
             cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
             process_move(server_id, p->direction);
         }
@@ -510,7 +517,9 @@ DWORD __stdcall ClientThread(LPVOID arg)
         // Player Stance & Dir
         case CS_PACKET_PLAYERSTANCE:
         {
+#ifdef SHOW_LOG
             cout << "CS_PACKET_PLAYERSTANCE"<< endl;
+#endif
             cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(g_tClient[server_id].m_packet_buf);
             g_tClient[server_id].cur_stance = p->cur_stance;
             g_tClient[server_id].cur_dir    = p->cur_dir;
@@ -549,13 +558,17 @@ int Connect_NewClient(SOCKET ns)
     /* 접속 수용인원 초과 */
     if (PROTOCOL_TEST::MAX_PLAYER == i)
     {
+#ifdef SHOW_LOG
         cout << "Max User limit exceeded." << endl;
+#endif
         closesocket(ns);
     }
     else
     {
         /* 접속 완료 */
+#ifdef SHOW_LOG
         cout << "New Client Accepted [" << i << "]" << endl;
+#endif
 
         /* 새로 접속한 유저의 클라이언트 객체 정보 설정 */
         /* 1) 시스템 콘텐츠 */
@@ -597,7 +610,9 @@ int ReceiveData(SOCKET s, char* buf, int len, int flags, u_short client_portnum)
     {
         received = recv(s, ptr, left, flags);
 
+#ifdef SHOW_LOG
         cout << "클라에서 받은 패킷 타입-" << static_cast<int>(ptr[1]) << endl;
+#endif
         if (SOCKET_ERROR == received)
         {
             err_display("recv()");
@@ -640,7 +655,7 @@ void ReadyMonsterInfo()
 
         temp->hp            = 100'000;
         temp->att           = 10;
-        temp->speed         = 2.5f;
+        temp->speed         = 1.0f;
         temp->exp           = 150;
         temp->cx            = 256.f;
         temp->cy            = 256.f;
@@ -676,16 +691,40 @@ DWORD __stdcall CollisionThread(LPVOID arg)
 {
     while (true)
     {
-        // Monster Update.
         for (auto& monLst : g_monLst)
         {
             auto iter_begin = monLst.begin();
-            auto iter_end = monLst.end();
+            auto iter_end   = monLst.end();
 
             for (; iter_begin != iter_end;)
             {
+                // Set Target.
+                CINFO* target   = &g_tClient[0];
+                float  dist     = 9999.0f;
+                for (int i = 0; i < MAX_PLAYER; ++i)
+                {
+                    if (g_tClient[i].in_use)
+                    {
+                        // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
+                        if (g_tClient[i].scene_id == (*iter_begin)->scene_id)
+                        {
+							float w = g_tClient[i].x - (*iter_begin)->x;
+							float h = g_tClient[i].y - (*iter_begin)->y;
+							float result = sqrtf(w * w + h * h);
+
+							if (dist > result)
+							{
+								dist = result;
+								(*iter_begin)->SetTarget(&g_tClient[i]);
+							}
+
+                            send_monsterinfo(i, *iter_begin);
+                        }
+                    }
+                }
+
+                // Monster Update.
                 int iEvent = (*iter_begin)->Update();
-                
                 if (SERVER_DEADOBJ == iEvent)
                 {
                     if (*iter_begin)
@@ -707,11 +746,29 @@ DWORD __stdcall CollisionThread(LPVOID arg)
     return S_OK;
 }
 
+void send_monsterinfo(int to, CMonsterInfo* src)
+{
+    sc_packet_monsterinfo p;
+    p.size          = sizeof(p);
+    p.type          = SC_PACKET_MONSTERINFO;
+
+    p.montype       = src->type;
+    p.idx           = src->idx;
+    p.hp            = src->hp;
+    p.x             = src->x;
+    p.y             = src->y;
+    p.angle         = src->angle;
+    p.is_dead       = src->is_dead;
+    p.cur_stance    = src->cur_stance;
+
+    send_packet(to, &p);
+}
+
 void send_createDungeonMonster(int to)
 {
     for (auto& pCow : g_monLst[COW])
     {
-        sc_packet_monsterinfo p;
+        sc_packet_monstercreateinfo p;
         p.size          = sizeof(p);
         p.type          = SC_PACKET_MONSTERCREATE;
        

@@ -160,6 +160,8 @@ int CCow::Update()
 
 void CCow::LateUpdate()
 {
+	ChangeImageKey();
+
 	CObj::UpdateColXYPos();
 	CObj::MoveFrame();
 	SceneChange();
@@ -177,9 +179,17 @@ void CCow::Render(HDC hDC)
 	float fScrollY = CScrollMgr::GetScrollY();
 
 	/*Cow 출력*/
-	GdiTransparentBlt(hDC, m_tRect.left + (int)fScrollX, m_tRect.top + (int)fScrollY, (int)m_tInfo.fCX, (int)m_tInfo.fCY,
-		hMemDC, m_tFrame.iFrameStart * (int)m_tInfo.fCX, m_tFrame.iScene * (int)m_tInfo.fCY,
-		(int)m_tInfo.fCX, (int)m_tInfo.fCY, RGB(255, 0, 255));
+	GdiTransparentBlt(hDC,
+					  m_tRect.left + (int)fScrollX, 
+					  m_tRect.top + (int)fScrollY, 
+					  (int)m_tInfo.fCX,
+					  (int)m_tInfo.fCY,
+					  hMemDC, 
+					  m_tFrame.iFrameStart * (int)m_tInfo.fCX,
+					  m_tFrame.iScene * (int)m_tInfo.fCY,
+					  (int)m_tInfo.fCX, 
+					  (int)m_tInfo.fCY, 
+					  RGB(255, 0, 255));
 
 	/*HP bar*/
 	NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(L"Small_HpBarEmpty"));
@@ -237,7 +247,7 @@ void CCow::SceneChange()
 
 void CCow::ChangeImageKey()
 {
-	m_fAngle = CMathMgr::CalcDegree(m_pTarget, this);
+	// m_fAngle = CMathMgr::CalcDegree(m_pTarget, this);
 
 	/*몬스터 방향 전환.*/
 	if (m_fAngle >= 0 && m_fAngle < 90)

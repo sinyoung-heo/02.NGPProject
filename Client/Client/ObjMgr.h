@@ -20,6 +20,7 @@ public:
 
 	OBJLIST& GetPlayerLst() { return m_ObjLst[ObjID::PLAYER];}
 	OBJLIST& GetMonLst()	{ return m_ObjLst[ObjID::MONSTER]; }
+	OBJLIST& GetObjList(const ObjID::ID& eID) { return m_ObjLst[eID]; }
 
 public:
 	void SetPlayerPos(float _x, float _y) { m_ObjLst[ObjID::PLAYER].front()->SetPos(_x, _y); }

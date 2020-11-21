@@ -58,15 +58,15 @@ void CObjMgr::LateUpdate()
 		}
 	}
 
-	/*Monster & Player 충돌시 밀어내기*/
-	CCollisionMgr::CollisionPush(m_ObjLst[ObjID::MONSTER], m_ObjLst[ObjID::PLAYER]);
+	///*Monster & Player 충돌시 밀어내기*/
+	//CCollisionMgr::CollisionPush(m_ObjLst[ObjID::MONSTER], m_ObjLst[ObjID::PLAYER]);
 
-	/*Player Skill & 몬스터 충돌*/
-	if(!m_ObjLst[ObjID::PLAYER].empty())
-		CCollisionMgr::CollisionPlayerSkill(m_ObjLst[ObjID::MONSTER], m_ObjLst[ObjID::SKILL_COLBOX], m_ObjLst[ObjID::PLAYER].front());
+	///*Player Skill & 몬스터 충돌*/
+	//if(!m_ObjLst[ObjID::PLAYER].empty())
+	//	CCollisionMgr::CollisionPlayerSkill(m_ObjLst[ObjID::MONSTER], m_ObjLst[ObjID::SKILL_COLBOX], m_ObjLst[ObjID::PLAYER].front());
 
-	/*Monster 공격 & Player 충돌*/
-	CCollisionMgr::CollisionMonsterSkill(m_ObjLst[ObjID::PLAYER], m_ObjLst[ObjID::MON_ATT_COLBOX]);
+	///*Monster 공격 & Player 충돌*/
+	//CCollisionMgr::CollisionMonsterSkill(m_ObjLst[ObjID::PLAYER], m_ObjLst[ObjID::MON_ATT_COLBOX]);
 }
 
 void CObjMgr::Render(HDC hDC)

@@ -12,7 +12,11 @@ public:
 	virtual ~CCow();
 
 public:
+	const int&		GetIdx() { return m_iIdx; }
+
 	void			SetStance(const STANCE& eStance) { m_eCurStance = eStance; }
+	void			SetIdx(const int& idx) { m_iIdx = idx; }
+	void			SetHpInfo(const int& hp) { m_tInfo.iHp = hp; }
 
 public:
 	virtual void	Initialize() override;
@@ -43,5 +47,8 @@ private:
 
 	float	m_fAttLen;
 	float	m_fDist;
+
+
+	int		m_iIdx = 0;
 };
 

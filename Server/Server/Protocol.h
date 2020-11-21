@@ -93,13 +93,15 @@ namespace PROTOCOL
 
 namespace PROTOCOL_TEST
 {
+#define SHOW_LOG 0
+
 #define SERVER_NOEVENT 0
 #define SERVER_DEADOBJ 1
 
     constexpr u_int SERVER_PORT = 9000;
     constexpr char SERVER_IP[32] = "127.0.0.1";
 
-    constexpr int MAX_BUF_SIZE  = 1024;
+    constexpr int MAX_BUF_SIZE  = 4'096;
     constexpr int MAX_ID_LEN    = 64;
     constexpr int MAX_PLAYER    = 3;
     constexpr int WORLD_WIDTH   = 800;
@@ -134,6 +136,7 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_SCENECHANGE    = 4;
     constexpr char SC_PACKET_PLAYERSTANCE   = 5;
     constexpr char SC_PACKET_MONSTERCREATE  = 6;
+    constexpr char SC_PACKET_MONSTERINFO    = 7;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -208,7 +211,7 @@ namespace PROTOCOL_TEST
         int     scene_id;
     };
 
-    struct sc_packet_monsterinfo
+    struct sc_packet_monstercreateinfo
     {
         char    size;
         char    type;
@@ -225,9 +228,24 @@ namespace PROTOCOL_TEST
         bool    is_dead;
 
         char    scene_id;
-        char    cur_stance;
+        int     cur_stance;
         char    cur_state;
         char    cur_dir;
+    };
+
+    struct sc_packet_monsterinfo
+    {
+        char    size;
+        char    type;
+
+        char    montype;        // Monster Type
+        int     idx;            // Monster Idx
+        float   x, y;
+        float   angle;
+        int     cur_stance;
+        int     hp;
+
+        bool    is_dead;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////
