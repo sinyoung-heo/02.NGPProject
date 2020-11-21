@@ -14,7 +14,7 @@ CMyMenu::~CMyMenu()
 
 void CMyMenu::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"BGM_Menu.mp3");
+	// CSoundMgr::GetInstance()->PlayBGM(L"BGM_Menu.mp3");
 
 
 	CBmpMgr::GetInstance()->InsertBmp(L"Menu", L"../Image/Menu/Menu.bmp");
@@ -63,5 +63,5 @@ void CMyMenu::Render(HDC hDC)
 void CMyMenu::Release()
 {
 	CObjMgr::GetInstance()->DeleteObj(ObjID::BUTTON);
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 }

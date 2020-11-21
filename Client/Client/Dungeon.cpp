@@ -19,7 +19,7 @@ CDungeon::~CDungeon()
 
 void CDungeon::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"BGM_Dun.mp3");
+	// CSoundMgr::GetInstance()->PlayBGM(L"BGM_Dun.mp3");
 
 
 	/*Ninja Hp Ui*/
@@ -89,7 +89,7 @@ void CDungeon::Render(HDC hDC)
 
 void CDungeon::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 
 	CObjMgr::GetInstance()->DeleteObj(ObjID::MONSTER);
 	CObjMgr::GetInstance()->DeleteObj(ObjID::EFFECT);

@@ -117,6 +117,20 @@ void send_move_packet(int to, int id)
     send_packet(to, &p);
 }
 
+void send_scenechange_packet(int to, int id)
+{
+    sc_packet_scenechange p;
+    p.size      = sizeof(p);
+    p.type      = SC_PACKET_SCENECHANGE;
+
+    p.id        = id;
+    p.x         = g_tClient[id].x;
+    p.y         = g_tClient[id].y;
+    p.scene_id  = g_tClient[id].scene_id;
+
+    send_packet(to, &p);
+}
+
 void process_move(int id, char dir)
 {
     float x = g_tClient[id].x;
@@ -427,6 +441,42 @@ DWORD __stdcall ClientThread(LPVOID arg)
         {
             cs_packet_scenechange* p = reinterpret_cast<cs_packet_scenechange*>(g_tClient[server_id].m_packet_buf);
             g_tClient[server_id].scene_id = p->scene_id;
+
+            // Scene의 시작 위치로 Player 위치 조정.
+            if (SCENEID_TOWN == p->scene_id)
+            {
+                g_tClient[server_id].x = 1005.f;
+                g_tClient[server_id].y = 555.f;
+            }
+            else if (SCENEID_STORE == p->scene_id)
+            {
+                g_tClient[server_id].x = 1005.f;
+                g_tClient[server_id].y = 765.f;
+            }
+            else if (SCENEID_DUNGEON == p->scene_id)
+            {
+                g_tClient[server_id].x = 735.f;
+                g_tClient[server_id].y = 555.f;
+            }
+            else if (SCENEID_BOSS == p->scene_id)
+            {
+                g_tClient[server_id].x = 1125.f;
+                g_tClient[server_id].y = 705.f;
+            }
+            else if (SCENEID_FIELD == p->scene_id)
+            {
+                g_tClient[server_id].x = 1515.f;
+                g_tClient[server_id].y = 1035.f;
+            }
+
+            send_scenechange_packet(server_id, server_id);
+            for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+            {
+                if (i != server_id)
+                {
+                    send_scenechange_packet(i, server_id);
+                }
+            }
 
         }
         break;

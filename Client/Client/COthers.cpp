@@ -57,6 +57,7 @@ void COthers::Initialize()
 	m_fAngle = 270.f;
 
 	m_eCurDir = ObjDir::DOWN;
+	m_eCurScene = CSceneMgr::SC_TOWN;
 }
 
 void COthers::LateInit()
@@ -95,13 +96,21 @@ void COthers::Render(HDC hDC)
 	CObj::UpdateColRect();	//충돌박스  업데이트.
 
 	/*Player Render*/
-
 	float fScrollX = CScrollMgr::GetScrollX();
 	float fScrollY = CScrollMgr::GetScrollY();
 
 	HDC hMemDC = nullptr;
 	for (auto& ob : g_umap_serverObj)
 	{
+		// 서로 다른 씬에 있다면 Rendering X
+		if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
+		{
+			CSceneMgr::SCENE eSceneID = CObjMgr::GetInstance()->GetPlayer()->GetSceneID();
+
+			if (eSceneID != ob.second->GetSceneID())
+				continue;
+		}
+
 
 		NULL_CHECK(hMemDC = CBmpMgr::GetInstance()->FindImage(static_cast<COthers*>(ob.second)->GetFrameKey().c_str()));
 		

@@ -14,7 +14,7 @@ CLogo::~CLogo()
 
 void CLogo::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"Vanilla Mood-10-Beyond.mp3");
+	// CSoundMgr::GetInstance()->PlayBGM(L"Vanilla Mood-10-Beyond.mp3");
 
 
 
@@ -61,7 +61,7 @@ void CLogo::Render(HDC hDC)
 
 void CLogo::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 }
 
 

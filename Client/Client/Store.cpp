@@ -16,7 +16,7 @@ CStore::~CStore()
 
 void CStore::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"BGM_Store.wav");
+	// CSoundMgr::GetInstance()->PlayBGM(L"BGM_Store.wav");
 
 	CTileMgr::GetInstance()->LoadData(L"Store");
 
@@ -93,7 +93,7 @@ void CStore::Render(HDC hDC)
 
 void CStore::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 
 	//CObjMgr::GetInstance()->DestroyInstance();
 

@@ -18,7 +18,7 @@ CField::~CField()
 
 void CField::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"BGM_Field.wav");
+	// CSoundMgr::GetInstance()->PlayBGM(L"BGM_Field.wav");
 
 
 	CTileMgr::GetInstance()->LoadData(L"Field");
@@ -93,7 +93,7 @@ void CField::Render(HDC hDC)
 
 void CField::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 
 	CObjMgr::GetInstance()->DeleteObj(ObjID::MONSTER);
 	CObjMgr::GetInstance()->DeleteObj(ObjID::EFFECT);

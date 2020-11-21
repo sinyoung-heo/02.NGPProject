@@ -18,7 +18,7 @@ CBossField::~CBossField()
 
 void CBossField::Initialize()
 {
-	CSoundMgr::GetInstance()->PlayBGM(L"BGM_Boss.mp3");
+	// CSoundMgr::GetInstance()->PlayBGM(L"BGM_Boss.mp3");
 
 
 	CBmpMgr::GetInstance()->InsertBmp(L"BorisBar", L"../Image/Monster/BorisBar.bmp");
@@ -102,7 +102,7 @@ void CBossField::Render(HDC hDC)
 
 void CBossField::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 
 	CObjMgr::GetInstance()->DeleteObj(ObjID::MONSTER);
 	CObjMgr::GetInstance()->DeleteObj(ObjID::EFFECT);

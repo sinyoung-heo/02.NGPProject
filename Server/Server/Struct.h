@@ -2,6 +2,8 @@
 #include "Protocol.h"
 using namespace PROTOCOL_TEST;
 
+
+
 typedef struct tagClientInfo
 {
     /* °ÔÀÓ ÄÜÅÙÃ÷ */

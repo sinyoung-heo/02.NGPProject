@@ -108,7 +108,8 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_MOVE           = 1;
     constexpr char SC_PACKET_ENTER          = 2;
     constexpr char SC_PACKET_LEAVE          = 3;
-    constexpr char SC_PACKET_PLAYERSTANCE   = 4;
+    constexpr char SC_PACKET_SCENECHANGE    = 4;
+    constexpr char SC_PACKET_PLAYERSTANCE   = 5;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -173,6 +174,16 @@ namespace PROTOCOL_TEST
         int     cur_dir;
     };
 
+    struct sc_packet_scenechange
+    {
+        char    size;
+        char    type;
+
+        int     id;
+        float   x, y;
+        int     scene_id;
+    };
+
     ////////////////////////////////////////////////////////////////////////////////////////
 
     // CLIENT -> SERVER
@@ -199,11 +210,11 @@ namespace PROTOCOL_TEST
     };
 
 
-    constexpr char SCENEID_TOWN     = 0;
-    constexpr char SCENEID_STORE    = SCENEID_TOWN + 1;
-    constexpr char SCENEID_DUNGEON  = SCENEID_TOWN + 2;
-    constexpr char SCENEID_BOSS     = SCENEID_TOWN + 3;
-    constexpr char SCENEID_FIELD    = SCENEID_TOWN + 4;
+    constexpr char SCENEID_TOWN     = 3;
+    constexpr char SCENEID_STORE    = 7;
+    constexpr char SCENEID_DUNGEON  = 5;
+    constexpr char SCENEID_BOSS     = 6;
+    constexpr char SCENEID_FIELD    = 4;
 
     struct cs_packet_scenechange
     {

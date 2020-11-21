@@ -18,7 +18,7 @@ CTown::~CTown()
 
 void CTown::Initialize()
 {	
-	CSoundMgr::GetInstance()->PlayBGM(L"Vanilla Mood-06-Tales Are About To Be Weaved~And, Don`t Forget~Carnival Town~Laputa.mp3");
+	// CSoundMgr::GetInstance()->PlayBGM(L"Vanilla Mood-06-Tales Are About To Be Weaved~And, Don`t Forget~Carnival Town~Laputa.mp3");
 
 	/*Player 최초 한 번만 생성하기 위한 작업.*/
 	if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
@@ -97,7 +97,7 @@ void CTown::Render(HDC hDC)
 
 void CTown::Release()
 {
-	CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
+	// CSoundMgr::GetInstance()->StopSound(CSoundMgr::CHANNEL::BGM);
 
 	CTileMgr::GetInstance()->DestroyInstance();
 	CObjMgr::GetInstance()->DeleteObj(ObjID::EFFECT);

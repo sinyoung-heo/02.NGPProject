@@ -169,6 +169,32 @@ void CPacketMgr::ProcessPacket(char* ptr)
 	}
 	break;
 
+	case SC_PACKET_SCENECHANGE:
+	{
+		sc_packet_scenechange* my_packet = reinterpret_cast<sc_packet_scenechange*>(ptr);
+
+		int other_id = my_packet->id;
+		if (other_id == g_iServerID)
+		{
+			if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
+			{
+				CObjMgr::GetInstance()->GetPlayer()->SetPos(my_packet->x, my_packet->y);
+				CObjMgr::GetInstance()->GetPlayer()->SetCurScene(static_cast<CSceneMgr::SCENE>(my_packet->scene_id));
+			}
+
+		}
+		else
+		{
+			if (0 != g_umap_serverObj.count(other_id))
+			{
+				g_umap_serverObj[other_id]->SetPos(my_packet->x, my_packet->y);
+				g_umap_serverObj[other_id]->SetCurScene(static_cast<CSceneMgr::SCENE>(my_packet->scene_id));
+			}
+		}
+
+	}
+	break;
+
 	// Other Player Animation Update.
 	case SC_PACKET_PLAYERSTANCE:
 	{
@@ -186,7 +212,6 @@ void CPacketMgr::ProcessPacket(char* ptr)
 
 	}
 	break;
-
 
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
