@@ -75,6 +75,8 @@ void send_packet(int id, void* p)
     }
 }
 
+void send_playerstance_packet(int to, int id, int stance, int dir);
+
 void send_enter_packet(int to, int id)
 {
     sc_packet_enter p;
@@ -193,6 +195,9 @@ void process_move(int id, char dir)
 
 void ProcessPacket(char* ptr, int server_id)
 {
+    ///* 패킷 타입 확인 */
+    //char p_type = g_tClient[server_id].m_packet_buf[1];
+
     switch (ptr[1])
     {
     case CS_PACKET_LOGIN:
@@ -224,8 +229,82 @@ void ProcessPacket(char* ptr, int server_id)
 
     case CS_PACKET_MOVE:
     {
-        cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
+#ifdef SHOW_LOG
+        cout << "CS_PACKET_MOVE" << endl;
+#endif
+        cs_packet_move* p = reinterpret_cast<cs_packet_move*>(ptr);
         process_move(server_id, p->direction);
+    }
+    break;
+
+    // Scene ID
+    case CS_PACKET_SCENECHANGE:
+    {
+        cs_packet_scenechange* p = reinterpret_cast<cs_packet_scenechange*>(ptr);
+        g_tClient[server_id].scene_id = p->scene_id;
+
+        // Scene의 시작 위치로 Player 위치 조정.
+        if (SCENEID_TOWN == p->scene_id)
+        {
+            g_tClient[server_id].x = 1005.f;
+            g_tClient[server_id].y = 555.f;
+        }
+        else if (SCENEID_STORE == p->scene_id)
+        {
+            g_tClient[server_id].x = 1005.f;
+            g_tClient[server_id].y = 765.f;
+        }
+        else if (SCENEID_DUNGEON == p->scene_id)
+        {
+            g_tClient[server_id].x = 735.f;
+            g_tClient[server_id].y = 555.f;
+
+            // Create Monster - Cow & Ninja
+            send_createDungeonMonster(server_id);
+
+        }
+        else if (SCENEID_BOSS == p->scene_id)
+        {
+            g_tClient[server_id].x = 1125.f;
+            g_tClient[server_id].y = 705.f;
+
+            // Create Monster - Boris.
+
+        }
+        else if (SCENEID_FIELD == p->scene_id)
+        {
+            g_tClient[server_id].x = 1515.f;
+            g_tClient[server_id].y = 1035.f;
+        }
+
+        send_scenechange_packet(server_id, server_id);
+        for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+        {
+            if (i != server_id)
+            {
+                send_scenechange_packet(i, server_id);
+            }
+        }
+
+    }
+    break;
+
+    // Player Stance & Dir
+    case CS_PACKET_PLAYERSTANCE:
+    {
+#ifdef SHOW_LOG
+        cout << "CS_PACKET_PLAYERSTANCE" << endl;
+#endif
+        cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(g_tClient[server_id].m_packet_buf);
+        g_tClient[server_id].cur_stance = p->cur_stance;
+        g_tClient[server_id].cur_dir = p->cur_dir;
+
+        for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+        {
+            if (i != server_id)
+                send_playerstance_packet(i, server_id, p->cur_stance, p->cur_dir);
+        }
+
     }
     break;
     default:
@@ -406,136 +485,13 @@ DWORD __stdcall ClientThread(LPVOID arg)
       /*__________________________________________________________________________________________________________
         [ Data Receive ] :: Server <---- Client
         ____________________________________________________________________________________________________________*/
-        retval = ReceiveData(g_tClient[server_id].m_sock,               // 통신할 대상과 연결된 소켓.
-                             g_tClient[server_id].m_packet_buf,         // 받은 데이터를 저장할 버퍼의 주소.
-                             sizeof(g_tClient[server_id].m_packet_buf), // 수신 버퍼로부터 복사할 최대 데이터의 크기.
-                             0,
-                             ntohs(tClientAddr.sin_port));              // 클라이언트 포트번호.
-        if (SOCKET_ERROR == retval)
-        {
-            err_display("recv()");
-            break;
-        }
-        else if (0 == retval)
-            continue;
+       
+        int flags = 0;
+        char net_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
+        int ret = recv(g_tClient[server_id].m_sock, net_buf, MAX_BUF_SIZE, flags);
 
 
-        /* 패킷 타입 확인 */
-        char p_type = g_tClient[server_id].m_packet_buf[1];
-
-        switch (p_type)
-        {
-        case CS_PACKET_LOGIN:
-        {
-            /* 로그인 확인 처리 */
-            cs_packet_login* p = reinterpret_cast<cs_packet_login*>(g_tClient[server_id].m_packet_buf);
-
-            //EnterCriticalSection(&cs);
-            strcpy_s(g_tClient[server_id].name, p->name);
-            //LeaveCriticalSection(&cs);
-
-            /* 로그인 확인 처리 완료 후 작업 */
-            send_login_ok(server_id);
-
-            /* 다른 유저에게 접속 사실을 알림 */
-            for (int i = 0; i < MAX_PLAYER; ++i)
-            {
-                if (g_tClient[i].in_use)
-                {
-                    if (server_id != i)
-                    {
-                        send_enter_packet(i, server_id);
-                        send_enter_packet(server_id, i);
-                    }
-                }
-            }
-        }
-        break;
-
-        case CS_PACKET_MOVE:
-        {
-#ifdef SHOW_LOG
-            cout << "CS_PACKET_MOVE" << endl;
-#endif
-            cs_packet_move* p = reinterpret_cast<cs_packet_move*>(g_tClient[server_id].m_packet_buf);
-            process_move(server_id, p->direction);
-        }
-        break;
-
-        // Scene ID
-        case CS_PACKET_SCENECHANGE:
-        {
-            cs_packet_scenechange* p = reinterpret_cast<cs_packet_scenechange*>(g_tClient[server_id].m_packet_buf);
-            g_tClient[server_id].scene_id = p->scene_id;
-
-            // Scene의 시작 위치로 Player 위치 조정.
-            if (SCENEID_TOWN == p->scene_id)
-            {
-                g_tClient[server_id].x = 1005.f;
-                g_tClient[server_id].y = 555.f;
-            }
-            else if (SCENEID_STORE == p->scene_id)
-            {
-                g_tClient[server_id].x = 1005.f;
-                g_tClient[server_id].y = 765.f;
-            }
-            else if (SCENEID_DUNGEON == p->scene_id)
-            {
-                g_tClient[server_id].x = 735.f;
-                g_tClient[server_id].y = 555.f;
-
-                // Create Monster - Cow & Ninja
-                send_createDungeonMonster(server_id);
-
-            }
-            else if (SCENEID_BOSS == p->scene_id)
-            {
-                g_tClient[server_id].x = 1125.f;
-                g_tClient[server_id].y = 705.f;
-
-                // Create Monster - Boris.
-
-            }
-            else if (SCENEID_FIELD == p->scene_id)
-            {
-                g_tClient[server_id].x = 1515.f;
-                g_tClient[server_id].y = 1035.f;
-            }
-
-            send_scenechange_packet(server_id, server_id);
-            for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
-            {
-                if (i != server_id)
-                {
-                    send_scenechange_packet(i, server_id);
-                }
-            }
-
-        }
-        break;
-
-        // Player Stance & Dir
-        case CS_PACKET_PLAYERSTANCE:
-        {
-#ifdef SHOW_LOG
-            cout << "CS_PACKET_PLAYERSTANCE"<< endl;
-#endif
-            cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(g_tClient[server_id].m_packet_buf);
-            g_tClient[server_id].cur_stance = p->cur_stance;
-            g_tClient[server_id].cur_dir    = p->cur_dir;
-
-            for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
-            {
-                if (i != server_id)
-                    send_playerstance_packet(i, server_id, p->cur_stance, p->cur_dir);
-            }
-
-        }
-        break;
-        default:
-            break;
-        }
-
+        process_data(net_buf, static_cast<size_t>(ret), server_id);
     }
 
     // Close Socket
