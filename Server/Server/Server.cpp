@@ -5,6 +5,8 @@
 #include <list>
 #include "Protocol.h"
 #include "Struct.h"
+#include "Timer.h"
+#include "Monster.h"
 
 using namespace std;
 using namespace PROTOCOL;
@@ -13,6 +15,8 @@ using namespace PROTOCOL_TEST;
 CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER]; // Clinet User Info
 //CRITICAL_SECTION cs;
 
+CTimer* g_pTimerFPS         { nullptr };
+CTimer* g_pTimerTimeDelta   { nullptr };
 
 void err_quit(char* msg)
 {
@@ -50,13 +54,13 @@ void            send_move_packet(int to, int id);
 void            send_playerstance_packet(int to, int id, int stance, int dir);
 void            send_scenechange_packet(int to, int id);
 void            send_createDungeonMonster(int to);
-void            send_monsterinfo(int to, CMonsterInfo* src);
+void            send_monsterinfo(int to, CMonster* src);
 
 void            ProcessMove(int id, char dir);
 
 #pragma region MONSTER
 enum    MONID { COW, NINJA, BORIS, MONID_END };
-typedef list<CMonsterInfo*> MONLIST;
+typedef list<CMonster*> MONLIST;
 typedef MONLIST::iterator   MONITER;
 
 // Monster List.
@@ -215,14 +219,25 @@ DWORD __stdcall ClientThread(LPVOID arg)
 // Monster Thread.
 DWORD __stdcall CollisionThread(LPVOID arg)
 {
+    // Create Timer.
+	g_pTimerFPS = CTimer::Create();
+	g_pTimerTimeDelta = CTimer::Create();
+
+    float fFrame    = 1.0f / 60.0f;
+    float fTime     = 0.0f;
+
     while (true)
     {
+        // Update Timer.
+        if (nullptr != g_pTimerFPS)
+            g_pTimerFPS->UpdateTimeDelta();
+        if (nullptr != g_pTimerTimeDelta)
+            g_pTimerTimeDelta->UpdateTimeDelta();
+        
+        // Send Monster Info To Client.
         for (auto& monLst : g_monLst)
         {
-            auto iter_begin = monLst.begin();
-            auto iter_end = monLst.end();
-
-            for (; iter_begin != iter_end;)
+            for (auto& pMonster : monLst)
             {
                 // Set Target.
                 CINFO* target = &g_tClient[0];
@@ -232,41 +247,78 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                     if (g_tClient[i].in_use)
                     {
                         // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
-                        if (g_tClient[i].scene_id == (*iter_begin)->scene_id)
+                        if (g_tClient[i].scene_id == (pMonster)->scene_id)
                         {
-                            float w = g_tClient[i].x - (*iter_begin)->x;
-                            float h = g_tClient[i].y - (*iter_begin)->y;
+                            float w = g_tClient[i].x - (pMonster)->x;
+                            float h = g_tClient[i].y - (pMonster)->y;
                             float result = sqrtf(w * w + h * h);
 
                             if (dist > result)
                             {
                                 dist = result;
-                                (*iter_begin)->SetTarget(&g_tClient[i]);
+                                (pMonster)->SetTarget(&g_tClient[i]);
                             }
 
-                            send_monsterinfo(i, *iter_begin);
+                            send_monsterinfo(i, pMonster);
                         }
                     }
                 }
-
-                // Monster Update.
-                int iEvent = (*iter_begin)->Update();
-                if (SERVER_DEADOBJ == iEvent)
-                {
-                    if (*iter_begin)
-                    {
-                        delete (*iter_begin);
-                        *iter_begin = nullptr;
-                    }
-                    iter_begin = monLst.erase(iter_begin);
-                }
-                else
-                    ++iter_begin;
             }
         }
 
+        fTime += g_pTimerFPS->GetTimeDelta();
+        if (fTime >= fFrame)
+        {
+            fTime = 0.0f;
+            // ++iFPS;
 
+            for (auto& monLst : g_monLst)
+            {
+                auto iter_begin = monLst.begin();
+                auto iter_end   = monLst.end();
 
+                for (; iter_begin != iter_end;)
+                {
+                    // Monster Update.
+                    int iEvent = (*iter_begin)->UpdateMonster(g_pTimerTimeDelta->GetTimeDelta());
+                    if (SERVER_DEADOBJ == iEvent)
+                    {
+                        if (*iter_begin)
+                        {
+                            delete (*iter_begin);
+                            *iter_begin = nullptr;
+                        }
+                        iter_begin = monLst.erase(iter_begin);
+                    }
+                    else
+                        ++iter_begin;
+                }
+
+            }
+
+        }
+
+        //// FPS 60 Limit.
+        //if (iFPStime >= 1.0f)
+        //{
+        //    cout << iFPS << endl;
+        //    iFPS = 0;
+        //    iFPStime = 0.f;
+        //}
+
+    }
+
+    // Free Timer.
+    if (g_pTimerFPS)
+    {
+        delete g_pTimerFPS;
+        g_pTimerFPS = nullptr;
+    }
+
+    if (g_pTimerTimeDelta)
+    {
+        delete g_pTimerTimeDelta;
+        g_pTimerTimeDelta = nullptr;
     }
 
     return S_OK;
@@ -607,7 +659,7 @@ void send_createDungeonMonster(int to)
     }
 }
 
-void send_monsterinfo(int to, CMonsterInfo* src)
+void send_monsterinfo(int to, CMonster* src)
 {
     sc_packet_monsterinfo p;
     p.size          = sizeof(p);
@@ -685,7 +737,7 @@ void ReadyMonsterInfo()
     float pos = 390.f;
     for (int i = 0; i < 4; ++i)
     {
-        CMonsterInfo* temp  = new CMonsterInfo;
+        CMonster* temp  = new CMonster;
         temp->type          = MON_COW;
         temp->idx           = i;
         temp->cur_stance    = MON_STANCE_IDLE;
@@ -695,7 +747,7 @@ void ReadyMonsterInfo()
 
         temp->hp            = 100'000;
         temp->att           = 10;
-        temp->speed         = 1.0f;
+        temp->speed         = 300.0f;
         temp->exp           = 150;
         temp->cx            = 256.f;
         temp->cy            = 256.f;

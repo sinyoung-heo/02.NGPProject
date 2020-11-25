@@ -7,10 +7,25 @@
     <Filter Include="99.Headers">
       <UniqueIdentifier>{1f6c6805-a293-4e09-a69f-8687aa41f947}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Timer">
+      <UniqueIdentifier>{eafd1e54-fc28-4bbd-870d-28a898f2036d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.ServerObject">
+      <UniqueIdentifier>{18c22248-fbcb-4abe-954b-5624d453c4b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.ServerObject\Monster">
+      <UniqueIdentifier>{6ba6ec82-b4d5-48e1-88b4-6f4a59ad0ca9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp">
       <Filter>00.Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>01.Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>02.ServerObject\Monster</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -19,6 +34,12 @@
     </ClInclude>
     <ClInclude Include="Struct.h">
       <Filter>99.Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>01.Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>02.ServerObject\Monster</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
