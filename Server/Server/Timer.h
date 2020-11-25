@@ -8,7 +8,7 @@ public:
 	~CTimer();
 
 public:
-	const float&	GetTimeDelta() { return m_fTimeDelta; }
+	float	GetTimeDelta() { return m_fTimeDelta; }
 	HRESULT			ReadyTimer();
 	void			UpdateTimeDelta();
 

@@ -1,10 +1,16 @@
 #include "Monster.h"
 #include <cmath>
+#include <iostream>
+using namespace std;
 
 int CMonster::UpdateMonster(const float& fTimeDelta)
 {
+    // cout << fTimeDelta << endl;
     if (is_dead)
         return SERVER_DEADOBJ;
+
+    if (fTimeDelta > 1.f)
+        return SERVER_NOEVENT;
 
     if (nullptr != target && !is_dead)
     {
@@ -18,7 +24,20 @@ int CMonster::UpdateMonster(const float& fTimeDelta)
             UpdateBoris(fTimeDelta);
     }
 
+    MoveFrame(fTimeDelta);
+
     return SERVER_NOEVENT;
+}
+
+void CMonster::MoveFrame(const float& fTimeDelta)
+{
+    if (fTimeDelta > 1.f)
+        return;
+
+    frame.frame_start += frame.frame_speed * fTimeDelta;
+
+    if ((int)frame.frame_start > (int)frame.frame_end)
+        frame.frame_start = 0.0f;
 }
 
 void CMonster::UpdateCow(const float& fTimeDelta)
@@ -60,6 +79,40 @@ void CMonster::UpdateCow(const float& fTimeDelta)
     }
     break;
 
+    }
+
+    SceneChangeCow();
+}
+
+void CMonster::SceneChangeCow()
+{
+    if (cur_stance != pre_stance)
+    {
+		switch (cur_stance)
+		{
+		case MON_STANCE_ATTACK:
+			frame.frame_start   = 0.0f;
+			frame.frame_end     = 9.0f;
+			frame.frame_speed   = 9.0f;
+			break;
+		case MON_STANCE_DEAD:
+			frame.frame_start   = 0;
+			frame.frame_end     = 10;
+			frame.frame_speed   = 10;
+			break;
+		case MON_STANCE_IDLE:
+			frame.frame_start   = 0.0f;
+			frame.frame_end     = 5.0f;
+			frame.frame_speed   = 5.0f;
+			break;
+		case MON_STANCE_RUN:
+			frame.frame_start   = 0;
+			frame.frame_end     = 7;
+			frame.frame_speed   = 7;
+			break;
+		}
+
+        pre_stance = cur_state;
     }
 }
 

@@ -14,9 +14,10 @@ public:
 public:
 	const int&		GetIdx() { return m_iIdx; }
 
-	void			SetStance(const STANCE& eStance) { m_eCurStance = eStance; }
-	void			SetIdx(const int& idx) { m_iIdx = idx; }
-	void			SetHpInfo(const int& hp) { m_tInfo.iHp = hp; }
+	void			SetStance(const STANCE& eStance)	{ m_eCurStance = eStance; }
+	void			SetIdx(const int& idx)				{ m_iIdx = idx; }
+	void			SetHpInfo(const int& hp)			{ m_tInfo.iHp = hp; }
+	void			SetCurFrame(const int& frame_start) { m_tFrame.iFrameStart = frame_start; }
 
 public:
 	virtual void	Initialize() override;

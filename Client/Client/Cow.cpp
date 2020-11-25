@@ -160,10 +160,10 @@ int CCow::Update()
 
 void CCow::LateUpdate()
 {
-	ChangeImageKey();
-
 	CObj::UpdateColXYPos();
-	CObj::MoveFrame();
+
+	// CObj::MoveFrame();
+	ChangeImageKey();
 	SceneChange();
 }
 
@@ -212,32 +212,32 @@ void CCow::SceneChange()
 		switch (m_eCurStance)
 		{
 		case ATTACK:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 9;
+			// m_tFrame.iFrameStart	= 0;
+			// m_tFrame.iFrameEnd		= 9;
 			m_tFrame.iScene			= 0;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 150;
+			// m_tFrame.dwOldTime		= GetTickCount();
+			// m_tFrame.dwFrameSpd		= 150;
 			break;
 		case DEAD:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 10;
+			// m_tFrame.iFrameStart	= 0;
+			// m_tFrame.iFrameEnd		= 10;
 			m_tFrame.iScene			= 1;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 200;
+			// m_tFrame.dwOldTime		= GetTickCount();
+			// m_tFrame.dwFrameSpd		= 200;
 			break;
 		case IDLE:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 5;
+			// m_tFrame.iFrameStart	= 0;
+			// m_tFrame.iFrameEnd		= 5;
 			m_tFrame.iScene			= 2;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 150;
+			// m_tFrame.dwOldTime		= GetTickCount();
+			// m_tFrame.dwFrameSpd		= 150;
 			break;
 		case RUN:
-			m_tFrame.iFrameStart	= 0;
-			m_tFrame.iFrameEnd		= 7;
+			// m_tFrame.iFrameStart	= 0;
+			// m_tFrame.iFrameEnd		= 7;
 			m_tFrame.iScene			= 3;
-			m_tFrame.dwOldTime		= GetTickCount();
-			m_tFrame.dwFrameSpd		= 150;
+			// m_tFrame.dwOldTime		= GetTickCount();
+			// m_tFrame.dwFrameSpd		= 150;
 			break;
 		}
 

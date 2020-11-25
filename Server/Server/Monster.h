@@ -3,6 +3,14 @@
 #include "Protocol.h"
 using namespace PROTOCOL_TEST;
 
+typedef struct tagFrame
+{
+    float   frame_start = 0.0f;
+    float   frame_end   = 0.0f;	
+    float   frame_speed = 0.0f;
+
+}FRAME;
+
 class CMonster
 {
 public:
@@ -10,14 +18,20 @@ public:
     ~CMonster() = default;
 
 public:
-    void    SetTarget(CINFO* pTarget) { target = pTarget; };
+    void        SetTarget(CINFO* pTarget) { target = pTarget; };
+
+public:
     int     UpdateMonster(const float& fTimeDelta);
 
 private:
+    void MoveFrame(const float& fTimeDelta);
+
     void UpdateCow(const float& fTimeDelta);
+    void SceneChangeCow();
+
     void UpdateNinja(const float& fTimeDelta);
     void UpdateBoris(const float& fTimeDelta);
-
+    
     float CalcDist();
     float CalcDegree();
 
@@ -34,10 +48,14 @@ public:
     float   angle       = 0.0f;
     bool    is_dead     = false;
 
+    FRAME   frame;
+
     char    scene_id    = 0;
     char    cur_stance  = 0;
     char    cur_state   = 0;
     char    cur_dir     = 0;
+
+    char    pre_stance  = 0;
 
     CINFO*  target      = nullptr;
     float   dist        = 0.0f;

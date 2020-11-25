@@ -257,9 +257,10 @@ void CPacketMgr::ProcessPacket(char* ptr)
 				if (my_packet->idx == static_cast<CCow*>(pCow)->GetIdx())
 				{
 					static_cast<CCow*>(pCow)->SetPos(my_packet->x, my_packet->y);
+					static_cast<CCow*>(pCow)->SetHpInfo(my_packet->hp);
 					static_cast<CCow*>(pCow)->SetAngle(my_packet->angle);
 					static_cast<CCow*>(pCow)->SetStance(static_cast<CCow::STANCE>(my_packet->cur_stance));
-					static_cast<CCow*>(pCow)->SetHpInfo(my_packet->hp);
+					static_cast<CCow*>(pCow)->SetCurFrame(static_cast<int>(my_packet->cur_frame));
 					pCow->SetIsDead(my_packet->is_dead);
 				}
 			}

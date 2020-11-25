@@ -9,7 +9,6 @@
 #include "Monster.h"
 
 using namespace std;
-using namespace PROTOCOL;
 using namespace PROTOCOL_TEST;
 
 CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER]; // Clinet User Info
@@ -220,8 +219,8 @@ DWORD __stdcall ClientThread(LPVOID arg)
 DWORD __stdcall CollisionThread(LPVOID arg)
 {
     // Create Timer.
-	g_pTimerFPS = CTimer::Create();
-	g_pTimerTimeDelta = CTimer::Create();
+	g_pTimerFPS         = CTimer::Create();
+	g_pTimerTimeDelta   = CTimer::Create();
 
     float fFrame    = 1.0f / 60.0f;
     float fTime     = 0.0f;
@@ -231,46 +230,46 @@ DWORD __stdcall CollisionThread(LPVOID arg)
         // Update Timer.
         if (nullptr != g_pTimerFPS)
             g_pTimerFPS->UpdateTimeDelta();
-        if (nullptr != g_pTimerTimeDelta)
-            g_pTimerTimeDelta->UpdateTimeDelta();
         
-        // Send Monster Info To Client.
-        for (auto& monLst : g_monLst)
-        {
-            for (auto& pMonster : monLst)
-            {
-                // Set Target.
-                CINFO* target = &g_tClient[0];
-                float  dist = 9999.0f;
-                for (int i = 0; i < MAX_PLAYER; ++i)
-                {
-                    if (g_tClient[i].in_use)
-                    {
-                        // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
-                        if (g_tClient[i].scene_id == (pMonster)->scene_id)
-                        {
-                            float w = g_tClient[i].x - (pMonster)->x;
-                            float h = g_tClient[i].y - (pMonster)->y;
-                            float result = sqrtf(w * w + h * h);
+        //// Send Monster Info To Client.
+        //for (auto& monLst : g_monLst)
+        //{
+        //    for (auto& pMonster : monLst)
+        //    {
+        //        // Set Target.
+        //        CINFO* target = &g_tClient[0];
+        //        float  dist = 9999.0f;
+        //        for (int i = 0; i < MAX_PLAYER; ++i)
+        //        {
+        //            if (g_tClient[i].in_use)
+        //            {
+        //                // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
+        //                if (g_tClient[i].scene_id == (pMonster)->scene_id)
+        //                {
+        //                    float w = g_tClient[i].x - (pMonster)->x;
+        //                    float h = g_tClient[i].y - (pMonster)->y;
+        //                    float result = sqrtf(w * w + h * h);
 
-                            if (dist > result)
-                            {
-                                dist = result;
-                                (pMonster)->SetTarget(&g_tClient[i]);
-                            }
+        //                    if (dist > result)
+        //                    {
+        //                        dist = result;
+        //                        (pMonster)->SetTarget(&g_tClient[i]);
+        //                    }
 
-                            send_monsterinfo(i, pMonster);
-                        }
-                    }
-                }
-            }
-        }
+        //                    send_monsterinfo(i, pMonster);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         fTime += g_pTimerFPS->GetTimeDelta();
         if (fTime >= fFrame)
         {
             fTime = 0.0f;
-            // ++iFPS;
+
+            if (nullptr != g_pTimerTimeDelta)
+                g_pTimerTimeDelta->UpdateTimeDelta();
 
             for (auto& monLst : g_monLst)
             {
@@ -279,6 +278,33 @@ DWORD __stdcall CollisionThread(LPVOID arg)
 
                 for (; iter_begin != iter_end;)
                 {
+                    // Set Target.
+                    CINFO* target = &g_tClient[0];
+                    float  dist = 9999.0f;
+                    for (int i = 0; i < MAX_PLAYER; ++i)
+                    {
+                        if (g_tClient[i].in_use)
+                        {
+                            // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
+                            if (g_tClient[i].scene_id == (*iter_begin)->scene_id)
+                            {
+                                float w = g_tClient[i].x - (*iter_begin)->x;
+                                float h = g_tClient[i].y - (*iter_begin)->y;
+                                float result = sqrtf(w * w + h * h);
+
+                                if (dist > result)
+                                {
+                                    dist = result;
+                                    (*iter_begin)->SetTarget(&g_tClient[i]);
+                                }
+
+                                send_monsterinfo(i, *iter_begin);
+                            }
+                        }
+                    }
+
+
+
                     // Monster Update.
                     int iEvent = (*iter_begin)->UpdateMonster(g_pTimerTimeDelta->GetTimeDelta());
                     if (SERVER_DEADOBJ == iEvent)
@@ -297,14 +323,6 @@ DWORD __stdcall CollisionThread(LPVOID arg)
             }
 
         }
-
-        //// FPS 60 Limit.
-        //if (iFPStime >= 1.0f)
-        //{
-        //    cout << iFPS << endl;
-        //    iFPS = 0;
-        //    iFPStime = 0.f;
-        //}
 
     }
 
@@ -673,6 +691,7 @@ void send_monsterinfo(int to, CMonster* src)
     p.angle         = src->angle;
     p.is_dead       = src->is_dead;
     p.cur_stance    = src->cur_stance;
+    p.cur_frame     = src->frame.frame_start;
 
     send_packet(to, &p);
 }
@@ -741,13 +760,18 @@ void ReadyMonsterInfo()
         temp->type          = MON_COW;
         temp->idx           = i;
         temp->cur_stance    = MON_STANCE_IDLE;
+        temp->pre_stance    = MON_STANCE_IDLE;
         temp->cur_state     = MON_STATE_REST;
         temp->cur_dir       = DIR_LEFT;
         temp->scene_id      = SCENEID_DUNGEON;
 
+        temp->frame.frame_start = 0.0f;
+        temp->frame.frame_end   = 5.0f;
+        temp->frame.frame_speed = 5.0f;
+
         temp->hp            = 100'000;
         temp->att           = 10;
-        temp->speed         = 300.0f;
+        temp->speed         = 100.0f;
         temp->exp           = 150;
         temp->cx            = 256.f;
         temp->cy            = 256.f;
