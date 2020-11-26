@@ -5,7 +5,6 @@ using namespace std;
 
 int CMonster::UpdateMonster(const float& fTimeDelta)
 {
-    // cout << fTimeDelta << endl;
     if (is_dead)
         return SERVER_DEADOBJ;
 
@@ -25,6 +24,23 @@ int CMonster::UpdateMonster(const float& fTimeDelta)
     }
 
     MoveFrame(fTimeDelta);
+
+    // Update Collision.
+    if (!is_collision)
+    {
+        collision_time += fTimeDelta;
+        if (collision_time >= updatetime)
+        {
+            collision_time  = 0.0f;
+            is_collision    = true;
+        }
+    }
+
+    if (hp <= 0)
+    {
+        is_dead = true;
+        hp = 0;
+    }
 
     return SERVER_NOEVENT;
 }
