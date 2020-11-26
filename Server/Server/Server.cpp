@@ -43,6 +43,7 @@ DWORD WINAPI    ClientThread(LPVOID arg);
 DWORD WINAPI    CollisionThread(LPVOID arg);
 
 int             ConnectNewClient(SOCKET ns);
+void            Disconnect_Client(int id);
 void            ProcessPacket(char* ptr, int server_id);
 void            ProcessData(char* net_buf, size_t io_byte, int server_id);
 
@@ -50,6 +51,7 @@ void            send_packet(int id, void* p);                                   
 void            send_login_ok(int id);                                          // 새로운 클라이언트 로그인 패킷
 void            send_enter_packet(int to, int id);
 void            send_move_packet(int to, int id);
+void            send_leave_packet(int to, int id);
 void            send_playerstance_packet(int to, int id, int stance, int dir);  // Player Animation 정보.
 void            send_scenechange_packet(int to, int id);                        // Player Scene 정보.
 void            send_createDungeonMonster(int to);                              // Monster 생성 정보.
@@ -210,11 +212,17 @@ DWORD __stdcall ClientThread(LPVOID arg)
                            MAX_BUF_SIZE, 
                            flags);
 
-        ProcessData(net_buf, static_cast<size_t>(ret), server_id);
+        if (ret == 0)
+        {
+            Disconnect_Client(server_id);
+            break;
+        }
+        else
+            ProcessData(net_buf, static_cast<size_t>(ret), server_id);
     }
 
     // Close Socket
-    closesocket(g_tClient[server_id].m_sock);
+    //closesocket(g_tClient[server_id].m_sock);
 
     return 0;
 }
@@ -397,6 +405,25 @@ int ConnectNewClient(SOCKET ns)
 
     }
     return i;
+}
+
+void Disconnect_Client(int id)
+{
+    for (int i = 0; i < MAX_PLAYER; ++i)
+    {
+        if (g_tClient[i].in_use)
+        {
+            if (i != id)
+            {
+                send_leave_packet(i, id);
+            }
+        }
+    }
+
+    g_tClient[id].in_use = false;
+    closesocket(g_tClient[id].m_sock);
+    g_tClient[id].m_sock = 0;
+    memset(&g_tClient[id], 0, sizeof(g_tClient[id]));
 }
 
 void ProcessPacket(char* ptr, int server_id)
@@ -632,6 +659,16 @@ void send_move_packet(int to, int id)
     p.id = id;
     p.x = g_tClient[id].x;
     p.y = g_tClient[id].y;
+
+    send_packet(to, &p);
+}
+
+void send_leave_packet(int to, int id)
+{
+    sc_packet_leave p;
+    p.id = id;
+    p.size = sizeof(p);
+    p.type = SC_PACKET_LEAVE;
 
     send_packet(to, &p);
 }
