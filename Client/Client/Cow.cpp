@@ -71,6 +71,14 @@ int CCow::Update()
 {
 	CObj::LateInit();
 
+	if (m_bIsDead)
+		return DEAD_OBJ;
+
+	if (m_tInfo.iHp <= 0)
+	{
+		m_bIsDead = true;
+	}
+
 	//if (m_bIsDead)
 	//{
 

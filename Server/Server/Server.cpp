@@ -12,7 +12,7 @@ using namespace std;
 using namespace PROTOCOL_TEST;
 
 CINFO g_tClient[PROTOCOL_TEST::MAX_PLAYER]; // Clinet User Info
-//CRITICAL_SECTION cs;
+CRITICAL_SECTION cs;
 
 CTimer* g_pTimerFPS         { nullptr };
 CTimer* g_pTimerTimeDelta   { nullptr };
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     for (auto& cl : g_tClient)
         cl.in_use = false;
 
-    //InitializeCriticalSection(&cs);
+    InitializeCriticalSection(&cs);
 
 	int retval = 0;
 
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
             CloseHandle(hThread);
     }
 
-    // DeleteCriticalSection(&cs);
+    DeleteCriticalSection(&cs);
 
     FreeMonsterInfo();
 
@@ -226,8 +226,8 @@ DWORD __stdcall CollisionThread(LPVOID arg)
 	g_pTimerFPS         = CTimer::Create();
 	g_pTimerTimeDelta   = CTimer::Create();
 
-    float fFrame    = 1.0f / 60.0f;
-    float fTime     = 0.0f;
+    float fFrame        = 1.0f / 60.0f;
+    float fTime         = 0.0f;
 
     while (true)
     {
@@ -298,25 +298,45 @@ DWORD __stdcall CollisionThread(LPVOID arg)
             for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
             {
                 // 사용중인 Client의 유저와 Monster 충돌검사.
-                if (g_tClient[i].in_use)
+                // Player의 상태가 Attack 이나 Skill이 아닌 경우에는 스킵.
+                if (g_tClient[i].in_use &&
+                    (STANCE_ATTACK == g_tClient[i].cur_stance) ||
+                    (STANCE_SKILL == g_tClient[i].cur_stance))
                 {
-                    // Player의 상태가 Attack 이나 Skill이 아닌 경우에는 스킵.
-                    if ((STANCE_ATTACK == g_tClient[i].cur_stance) ||
-                        (STANCE_SKILL == g_tClient[i].cur_stance))
-                    {
-						for (auto& monList : g_monLst)
+					for (auto& monList : g_monLst)
+					{
+						for (auto& pMonster : monList)
 						{
-							for (auto& pMonster : monList)
+                            if (pMonster->is_dead)
+                                continue;
+
+							if (CheckSphere(g_tClient[i].attX, g_tClient[i].attY, g_tClient[i].att_radius,
+								pMonster->x, pMonster->y, pMonster->radius))
 							{
-								if (CheckSphere(g_tClient[i].x, g_tClient[i].y, g_tClient[i].radius,
-									pMonster->x, pMonster->y, pMonster->radius))
-								{
-									cout << "Collision Player - Monster" << endl;
-								}
+								if (SKILL_BASIC == g_tClient[i].cur_skill)
+                                    pMonster->updatetime = 0.5f;
+								else if (SKILL_MOON == g_tClient[i].cur_skill)
+                                    pMonster->updatetime = 0.1f;
+								else if (SKILL_MULTI == g_tClient[i].cur_skill)
+                                    pMonster->updatetime = 0.15f;
+								else if (SKILL_SOUL == g_tClient[i].cur_skill)
+                                    pMonster->updatetime = 0.5f;
+
+                                if (pMonster->is_collision)
+                                {
+                                    pMonster->is_collision = !pMonster->is_collision;
+
+                                    // Monster Hp 감소.
+                                    pMonster->hp -= g_tClient[i].att;
+
+                                    cout << "Collision Player - Monster" << endl;
+                                }
 
 							}
+
 						}
-                    }
+
+					}
 
                 }
             }
@@ -376,7 +396,7 @@ int ConnectNewClient(SOCKET ns)
         //LeaveCriticalSection(&cs);
 
         /* 2) 게임 콘텐츠 */
-        g_tClient[i].att        = 1'000;
+        g_tClient[i].att        = 5'000;
         g_tClient[i].exp        = 0;
         g_tClient[i].hp         = 9'999;
         g_tClient[i].mp         = 9'999;
@@ -518,7 +538,6 @@ void ProcessPacket(char* ptr, int server_id)
     {
         cs_packet_playerattack* p = reinterpret_cast<cs_packet_playerattack*>(ptr);
         g_tClient[server_id].cur_skill = p->cur_skill;
-        cout << p->cur_skill << endl;
     }
     break;
 
@@ -588,7 +607,7 @@ void send_login_ok(int id)
     p.size = sizeof(p);
     p.type = SC_PACKET_LOGIN_OK;
 
-    p.att   = 1'000;
+    p.att   = 5'000;
     p.exp   = 0;
     p.hp    = 9'999;
     p.mp    = 9'999;

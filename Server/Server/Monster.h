@@ -60,5 +60,10 @@ public:
 
     CINFO*  target      = nullptr;
     float   dist        = 0.0f;
+
+    // Collision.
+    bool    is_collision    = true;
+    float   updatetime      = 0.5f;
+    float   collision_time  = 0.0f;
 };
 
