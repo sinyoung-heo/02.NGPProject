@@ -83,7 +83,13 @@ void CPacketMgr::ProcessPacket(char* ptr)
 		g_iServerID = my_packet->id;
 		
 		if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
+		{
 			CObjMgr::GetInstance()->GetPlayer()->SetPos(my_packet->x, my_packet->y);
+			CObjMgr::GetInstance()->GetPlayer()->SetPlayerHp(my_packet->hp);
+			CObjMgr::GetInstance()->GetPlayer()->SetPlayerMp(my_packet->mp);
+			CObjMgr::GetInstance()->GetPlayer()->SetPlayerSp(my_packet->sp);
+			CObjMgr::GetInstance()->GetPlayer()->SetPlayerAtt(my_packet->att);
+		}
 
 		cout << "Login OK! 접속완료!" << endl;
 	}
@@ -304,13 +310,23 @@ void CPacketMgr::SendPlayerSceneID(unsigned char scene_id)
 	SendPacketToServer(&packet);
 }
 
-void CPacketMgr::SendPlayerStance(unsigned char stance, unsigned char dir)
+void CPacketMgr::SendPlayerStance(int stance, int dir)
 {
 	cs_packet_playerstance packet;
 	packet.size			= sizeof(packet);
 	packet.type			= CS_PACKET_PLAYERSTANCE;
 	packet.cur_stance	= stance;
 	packet.cur_dir		= dir;
+
+	SendPacketToServer(&packet);
+}
+
+void CPacketMgr::SendPlayerAttack(unsigned char skill)
+{
+	cs_packet_playerattack packet;
+	packet.size			= sizeof(packet);
+	packet.type			= CS_PACKET_PLAYERATTACK;
+	packet.cur_skill	= skill;
 
 	SendPacketToServer(&packet);
 }

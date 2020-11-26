@@ -47,6 +47,7 @@ public:
     float   speed       = 0.0f;
     float   angle       = 0.0f;
     bool    is_dead     = false;
+    float   radius      = 50.0f;
 
     FRAME   frame;
 

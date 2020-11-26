@@ -52,6 +52,7 @@ namespace PROTOCOL_TEST
     constexpr char CS_PACKET_MOVE           = 1;
     constexpr char CS_PACKET_SCENECHANGE    = 2;
     constexpr char CS_PACKET_PLAYERSTANCE   = 3;
+    constexpr char CS_PACKET_PLAYERATTACK   = 4;
 
 
     // SERVER -> CLIENT
@@ -218,8 +219,23 @@ namespace PROTOCOL_TEST
         char size;
         char type;
 
-        char cur_stance;
-        char cur_dir;
+        int cur_stance;
+        int cur_dir;
+    };
+
+
+
+    constexpr char SKILL_SOUL   = 0;
+    constexpr char SKILL_MOON   = 1;
+    constexpr char SKILL_MULTI  = 2;
+    constexpr char SKILL_BASIC  = 3;
+
+    struct cs_packet_playerattack
+    {
+        char size;
+        char type;
+
+        char cur_skill;
     };
 #pragma pack(pop)
 }

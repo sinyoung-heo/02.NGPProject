@@ -46,16 +46,19 @@ int             ConnectNewClient(SOCKET ns);
 void            ProcessPacket(char* ptr, int server_id);
 void            ProcessData(char* net_buf, size_t io_byte, int server_id);
 
-void            send_packet(int id, void* p);   // 패킷 전송 함수
-void            send_login_ok(int id);          // 새로운 클라이언트 로그인 패킷
+void            send_packet(int id, void* p);                                   // 패킷 전송 함수.
+void            send_login_ok(int id);                                          // 새로운 클라이언트 로그인 패킷
 void            send_enter_packet(int to, int id);
 void            send_move_packet(int to, int id);
-void            send_playerstance_packet(int to, int id, int stance, int dir);
-void            send_scenechange_packet(int to, int id);
-void            send_createDungeonMonster(int to);
-void            send_monsterinfo(int to, CMonster* src);
+void            send_playerstance_packet(int to, int id, int stance, int dir);  // Player Animation 정보.
+void            send_scenechange_packet(int to, int id);                        // Player Scene 정보.
+void            send_createDungeonMonster(int to);                              // Monster 생성 정보.
+void            send_monsterinfo(int to, CMonster* src);                        // Server에 존재하는 Monster 정보.
 
 void            ProcessMove(int id, char dir);
+bool            CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius,
+                            const float& src_x, const float& src_y, const float& src_radius);
+
 
 #pragma region MONSTER
 enum    MONID { COW, NINJA, BORIS, MONID_END };
@@ -200,11 +203,12 @@ DWORD __stdcall ClientThread(LPVOID arg)
       /*__________________________________________________________________________________________________________
         [ Data Receive ] :: Server <---- Client
         ____________________________________________________________________________________________________________*/
-       
-        int flags = 0;
-        char net_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
-        int ret = recv(g_tClient[server_id].m_sock, net_buf, MAX_BUF_SIZE, flags);
-
+        int     flags = 0;
+        char    net_buf[PROTOCOL_TEST::MAX_BUF_SIZE];
+        int     ret = recv(g_tClient[server_id].m_sock,
+                           net_buf,
+                           MAX_BUF_SIZE, 
+                           flags);
 
         ProcessData(net_buf, static_cast<size_t>(ret), server_id);
     }
@@ -230,39 +234,8 @@ DWORD __stdcall CollisionThread(LPVOID arg)
         // Update Timer.
         if (nullptr != g_pTimerFPS)
             g_pTimerFPS->UpdateTimeDelta();
-        
-        //// Send Monster Info To Client.
-        //for (auto& monLst : g_monLst)
-        //{
-        //    for (auto& pMonster : monLst)
-        //    {
-        //        // Set Target.
-        //        CINFO* target = &g_tClient[0];
-        //        float  dist = 9999.0f;
-        //        for (int i = 0; i < MAX_PLAYER; ++i)
-        //        {
-        //            if (g_tClient[i].in_use)
-        //            {
-        //                // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
-        //                if (g_tClient[i].scene_id == (pMonster)->scene_id)
-        //                {
-        //                    float w = g_tClient[i].x - (pMonster)->x;
-        //                    float h = g_tClient[i].y - (pMonster)->y;
-        //                    float result = sqrtf(w * w + h * h);
 
-        //                    if (dist > result)
-        //                    {
-        //                        dist = result;
-        //                        (pMonster)->SetTarget(&g_tClient[i]);
-        //                    }
-
-        //                    send_monsterinfo(i, pMonster);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
+        // Limit FPS 60.
         fTime += g_pTimerFPS->GetTimeDelta();
         if (fTime >= fFrame)
         {
@@ -271,6 +244,7 @@ DWORD __stdcall CollisionThread(LPVOID arg)
             if (nullptr != g_pTimerTimeDelta)
                 g_pTimerTimeDelta->UpdateTimeDelta();
 
+            // Monster Update.
             for (auto& monLst : g_monLst)
             {
                 auto iter_begin = monLst.begin();
@@ -303,8 +277,6 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                         }
                     }
 
-
-
                     // Monster Update.
                     int iEvent = (*iter_begin)->UpdateMonster(g_pTimerTimeDelta->GetTimeDelta());
                     if (SERVER_DEADOBJ == iEvent)
@@ -320,6 +292,33 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                         ++iter_begin;
                 }
 
+            }
+
+            // Check Collision.
+            for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+            {
+                // 사용중인 Client의 유저와 Monster 충돌검사.
+                if (g_tClient[i].in_use)
+                {
+                    // Player의 상태가 Attack 이나 Skill이 아닌 경우에는 스킵.
+                    if ((STANCE_ATTACK == g_tClient[i].cur_stance) ||
+                        (STANCE_SKILL == g_tClient[i].cur_stance))
+                    {
+						for (auto& monList : g_monLst)
+						{
+							for (auto& pMonster : monList)
+							{
+								if (CheckSphere(g_tClient[i].x, g_tClient[i].y, g_tClient[i].radius,
+									pMonster->x, pMonster->y, pMonster->radius))
+								{
+									cout << "Collision Player - Monster" << endl;
+								}
+
+							}
+						}
+                    }
+
+                }
             }
 
         }
@@ -377,17 +376,20 @@ int ConnectNewClient(SOCKET ns)
         //LeaveCriticalSection(&cs);
 
         /* 2) 게임 콘텐츠 */
-        g_tClient[i].att        = 0;
+        g_tClient[i].att        = 1'000;
         g_tClient[i].exp        = 0;
-        g_tClient[i].hp         = 0;
-        g_tClient[i].mp         = 0;
-        g_tClient[i].level      = 0;
-        g_tClient[i].sp         = 0;
-        g_tClient[i].speed      = 0;
+        g_tClient[i].hp         = 9'999;
+        g_tClient[i].mp         = 9'999;
+        g_tClient[i].level      = 1;
+        g_tClient[i].sp         = 9'999;
+        g_tClient[i].speed      = 100;
+        g_tClient[i].radius     = 50.0f;
 
         g_tClient[i].scene_id   = SCENEID_TOWN;
         g_tClient[i].cur_stance = STANCE_IDLE;
         g_tClient[i].cur_dir    = DIR_DOWN;
+
+        g_tClient[i].att_radius = 50.0f;
 
         /* 새로운 플레이어의 초기 위치 값 설정 */
         g_tClient[i].x = 1005.f;
@@ -407,7 +409,7 @@ void ProcessPacket(char* ptr, int server_id)
     case CS_PACKET_LOGIN:
     {
         /* 로그인 확인 처리 */
-        cs_packet_login* p = reinterpret_cast<cs_packet_login*>(g_tClient[server_id].m_packet_buf);
+        cs_packet_login* p = reinterpret_cast<cs_packet_login*>(ptr);
 
         //EnterCriticalSection(&cs);
         strcpy_s(g_tClient[server_id].name, p->name);
@@ -499,9 +501,9 @@ void ProcessPacket(char* ptr, int server_id)
 #ifdef SHOW_LOG
         cout << "CS_PACKET_PLAYERSTANCE" << endl;
 #endif
-        cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(g_tClient[server_id].m_packet_buf);
+        cs_packet_playerstance* p = reinterpret_cast<cs_packet_playerstance*>(ptr);
         g_tClient[server_id].cur_stance = p->cur_stance;
-        g_tClient[server_id].cur_dir = p->cur_dir;
+        g_tClient[server_id].cur_dir    = p->cur_dir;
 
         for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
         {
@@ -511,6 +513,15 @@ void ProcessPacket(char* ptr, int server_id)
 
     }
     break;
+
+    case CS_PACKET_PLAYERATTACK:
+    {
+        cs_packet_playerattack* p = reinterpret_cast<cs_packet_playerattack*>(ptr);
+        g_tClient[server_id].cur_skill = p->cur_skill;
+        cout << p->cur_skill << endl;
+    }
+    break;
+
     default:
         break;
     }
@@ -518,27 +529,31 @@ void ProcessPacket(char* ptr, int server_id)
 
 void ProcessData(char* net_buf, size_t io_byte, int server_id)
 {
-    char* ptr = net_buf;
-    static size_t in_packet_size = 0;
-    static size_t saved_packet_size = 0;
-    static char packet_buffer[PROTOCOL_TEST::MAX_BUF_SIZE];
+    char*           ptr               = net_buf;
+    static size_t   in_packet_size    = 0;
+    static size_t   saved_packet_size = 0;
+    static char     packet_buffer[PROTOCOL_TEST::MAX_BUF_SIZE];
 
     while (0 != io_byte)
     {
-        if (0 == in_packet_size) in_packet_size = ptr[0];
+        if (0 == in_packet_size) 
+            in_packet_size = ptr[0];
 
         if (io_byte + saved_packet_size >= in_packet_size)
         {
             memcpy(packet_buffer + saved_packet_size, ptr, in_packet_size - saved_packet_size);
             ProcessPacket(packet_buffer, server_id);
-            ptr += in_packet_size - saved_packet_size;
+
+            ptr     += in_packet_size - saved_packet_size;
             io_byte -= in_packet_size - saved_packet_size;
-            in_packet_size = 0;
-            saved_packet_size = 0;
+
+            in_packet_size      = 0;
+            saved_packet_size   = 0;
         }
         else
         {
             memcpy(packet_buffer + saved_packet_size, ptr, io_byte);
+
             saved_packet_size += io_byte;
             io_byte = 0;
         }
@@ -573,16 +588,16 @@ void send_login_ok(int id)
     p.size = sizeof(p);
     p.type = SC_PACKET_LOGIN_OK;
 
-    p.att = 0;
-    p.exp = 0;
-    p.hp = 100;
-    p.mp = 100;
-    p.id = id;
+    p.att   = 1'000;
+    p.exp   = 0;
+    p.hp    = 9'999;
+    p.mp    = 9'999;
+    p.sp    = 9'999;
+    p.id    = id;
     p.level = 1;
-    p.sp = 100;
     p.speed = 100;
-    p.x = g_tClient[id].x;
-    p.y = g_tClient[id].y;
+    p.x     = g_tClient[id].x;
+    p.y     = g_tClient[id].y;
 
     p.scene_id = SCENEID_TOWN;
 
@@ -624,11 +639,11 @@ void send_move_packet(int to, int id)
 void send_playerstance_packet(int to, int id, int stance, int dir)
 {
     sc_packet_playerstance p;
-    p.size = sizeof(p);
-    p.type = SC_PACKET_PLAYERSTANCE;
-    p.id = id;
-    p.cur_stance = stance;
-    p.cur_dir = dir;
+    p.size          = sizeof(p);
+    p.type          = SC_PACKET_PLAYERSTANCE;
+    p.id            = id;
+    p.cur_stance    = stance;
+    p.cur_dir       = dir;
 
     send_packet(to, &p);
 }
@@ -705,15 +720,23 @@ void ProcessMove(int id, char dir)
     {
     case MV_UP:
         y -= 2.5f;
+        g_tClient[id].angle = 270.0f;
+
         break;
     case MV_DOWN:
         y += 2.5f;
+        g_tClient[id].angle = 90.0f;
+
         break;
     case MV_LEFT:
         x -= 2.5f;
+        g_tClient[id].angle = 180.0f;
+
         break;
     case MV_RIGHT:
         x += 2.5f;
+        g_tClient[id].angle = 360.0f;
+
         break;
     default:
 #ifdef SHOW_LOG
@@ -724,11 +747,16 @@ void ProcessMove(int id, char dir)
         break;
     }
 
-    /* 해당 클라이언트가 움직인 후 좌표 */
+    // 해당 클라이언트가 움직인 후 좌표.
     g_tClient[id].x = x;
     g_tClient[id].y = y;
 
-    /* 이동 키 입력을 보낸 클라이언트에게 자신의 움직인 결과를 보내준다. */
+    // Player가 공격 Object를 생성하는 위치 좌표.
+    g_tClient[id].attX = g_tClient[id].x + cosf(g_tClient[id].angle * 3.141592f / 180.0f) * g_tClient[id].attlen;
+    g_tClient[id].attY = g_tClient[id].y + sinf(g_tClient[id].angle * 3.141592f / 180.0f) * g_tClient[id].attlen;
+
+
+    // 이동 키 입력을 보낸 클라이언트에게 자신의 움직인 결과를 보내준다.
     send_move_packet(id, id);
 
     for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
@@ -738,6 +766,18 @@ void ProcessMove(int id, char dir)
             send_move_packet(i, id);
         }
     }
+}
+
+bool CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius, 
+                 const float& src_x, const float& src_y, const float& src_radius)
+{
+    float sum_radius = dst_radius + src_radius;
+
+    float w = dst_x - src_x;
+    float h = dst_y - src_y;
+    float d = sqrtf(w * w + h * h);
+
+    return (sum_radius >= d);
 }
 
 
@@ -778,6 +818,7 @@ void ReadyMonsterInfo()
         temp->x             = 1230.f;
         temp->y             = pos;
         temp->angle         = 90.0f;
+        temp->radius        = 50.0f;
         temp->is_dead       = false;
         temp->target        = nullptr;
 

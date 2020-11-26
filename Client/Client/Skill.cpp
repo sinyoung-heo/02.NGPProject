@@ -25,8 +25,8 @@ void CSkill::Initialize()
 
 void CSkill::LateInit()
 {
-	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(50.f, 50.f, m_tInfo.fX, m_tInfo.fY, m_pPlayer->GetInfo().iAtt),
-		ObjID::SKILL_COLBOX);
+	//CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(50.f, 50.f, m_tInfo.fX, m_tInfo.fY, m_pPlayer->GetInfo().iAtt),
+	//	ObjID::SKILL_COLBOX);
 }
 
 int CSkill::Update()

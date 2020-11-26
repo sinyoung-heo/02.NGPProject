@@ -40,6 +40,12 @@ public:
 	void SetCurScene(const CSceneMgr::SCENE& eID) { m_eCurScene = eID; }
 	void SetIsDead(const bool& bIsDead) { m_bIsDead = bIsDead; }
 
+	//////////////////////////////////////////////////////////////////
+	void SetPlayerHp(const int& hp)		{ m_tInfo.iMaxHp = hp; m_tInfo.iHp = hp; };
+	void SetPlayerMp(const int& mp)		{ m_tInfo.iMaxMp = mp; m_tInfo.iMp = mp; };
+	void SetPlayerSp(const int& sp)		{ m_tInfo.iMaxSp = sp; m_tInfo.iSp = sp; };
+	void SetPlayerAtt(const int& att)	{ m_tInfo.iAtt = att; };
+
 	const CSceneMgr::SCENE& GetSceneID() { return m_eCurScene; }
 
 	/*충돌 밀어내기 좌표세팅*/

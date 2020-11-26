@@ -15,10 +15,19 @@ typedef struct tagClientInfo
     int     att;
     float   x, y;
     float   speed;
+    float   radius;
+
+    // Attack Info.
+    float   angle;  // Attack ¹æÇâ.
+    float   attlen; // Attack ¸®Ä¡
+    float   attX;   // Attack ¸®Ä¡ XÁÂÇ¥.
+    float   attY;   // Attack ¸®Ä¡ YÁÂÇ¥.
+    float   att_radius;
 
     char    scene_id;
     char    cur_stance;
     char    cur_dir;
+    char    cur_skill;
 
     /* ½Ã½ºÅÛ ÄÜÅÙÃ÷ */
     bool    in_use;

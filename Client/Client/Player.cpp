@@ -105,26 +105,26 @@ void CPlayer::Initialize()
 	m_tInfo.fCY = 256.f;
 	wstring wstr(g_szServerName, &g_szServerName[64]);
 	//m_tInfo.szName = L"Sin_Young";
-	m_tInfo.szName = wstr;
-	m_tInfo.iLevel = 1;
-	m_tInfo.iMaxHp = 7000;
-	m_tInfo.iHp = m_tInfo.iMaxHp;
-	m_tInfo.iMaxMp = 3000;
-	m_tInfo.iMp = m_tInfo.iMaxMp;
-	m_tInfo.iMaxSp = 5000;
-	m_tInfo.iSp = m_tInfo.iMaxSp;
-	m_tInfo.iAtt = 123;
-	m_tInfo.iExp = 0;
+	m_tInfo.szName	= wstr;
+	m_tInfo.iLevel	= 1;
+	m_tInfo.iMaxHp	= 9'999;
+	m_tInfo.iHp		= m_tInfo.iMaxHp;
+	m_tInfo.iMaxMp	= 9'999;
+	m_tInfo.iMp		= m_tInfo.iMaxMp;
+	m_tInfo.iMaxSp	= 9'999;
+	m_tInfo.iSp		= m_tInfo.iMaxSp;
+	m_tInfo.iAtt	= 1'000;
+	m_tInfo.iExp	= 0;
 	m_tInfo.iMaxExp = 200;
-	m_tInfo.iGold = 1000000;
+	m_tInfo.iGold	= 1000000;
 
-	m_tAbility.iStap = 2;
-	m_tAbility.iHack = 5;
-	m_tAbility.iInt = 1;
-	m_tAbility.iDef = 3;
-	m_tAbility.iMr = 1;
-	m_tAbility.iDex = 4;
-	m_tAbility.iAgl = 3;
+	m_tAbility.iStap	= 2;
+	m_tAbility.iHack	= 5;
+	m_tAbility.iInt		= 1;
+	m_tAbility.iDef		= 3;
+	m_tAbility.iMr		= 1;
+	m_tAbility.iDex		= 4;
+	m_tAbility.iAgl		= 3;
 
 	m_iComboCnt = 0;
 
@@ -433,24 +433,26 @@ void CPlayer::KeyInput()
 	/*__________________________________________________________________________________________________________
 	[ Change RUN / WALK ]
 	____________________________________________________________________________________________________________*/
-	if (KEY_DOWN('R'))
-	{
-		m_bIsRunning = !m_bIsRunning;
-		m_iMoveState = (m_iMoveState + 1) % 2;
-	}
-	if (m_bIsRunning == false)
-	{
-		++m_tInfo.iSp;
+#pragma region RUN_AND_WALK
+	//if (KEY_DOWN('R'))
+	//{
+	//	m_bIsRunning = !m_bIsRunning;
+	//	m_iMoveState = (m_iMoveState + 1) % 2;
+	//}
+	//if (m_bIsRunning == false)
+	//{
+	//	++m_tInfo.iSp;
 
-		if (m_tInfo.iSp > m_tInfo.iMaxSp)
-			m_tInfo.iSp = m_tInfo.iMaxSp;
-	}
-	if (m_tInfo.iSp <= 0)
-	{
-		m_tInfo.iSp = 0;
-		m_bIsRunning = false;
-		m_iMoveState = (m_iMoveState + 1) % 2;
-	}
+	//	if (m_tInfo.iSp > m_tInfo.iMaxSp)
+	//		m_tInfo.iSp = m_tInfo.iMaxSp;
+	//}
+	//if (m_tInfo.iSp <= 0)
+	//{
+	//	m_tInfo.iSp = 0;
+	//	m_bIsRunning = false;
+	//	m_iMoveState = (m_iMoveState + 1) % 2;
+	//}
+#pragma endregion
 
 	/*__________________________________________________________________________________________________________
 	[ Player Move - RUN ]
@@ -700,6 +702,8 @@ void CPlayer::KeyInput()
 		m_pFrameKey		= L"Player_Left_";
 		m_eCurStance	= RUN;
 		m_eCurDir		= ObjDir::LEFT;
+
+		m_fAngle = 180.0f;
 	}
 	else if (KEY_PRESSING('D') && g_bIsActive)
 	{
@@ -708,6 +712,8 @@ void CPlayer::KeyInput()
 		m_pFrameKey		= L"Player_Right_";
 		m_eCurStance	= RUN;
 		m_eCurDir		= ObjDir::RIGHT;
+
+		m_fAngle = 360.0f;
 	}
 	else if (KEY_PRESSING('W') && g_bIsActive)
 	{
@@ -716,6 +722,8 @@ void CPlayer::KeyInput()
 		m_pFrameKey		= L"Player_Up_";
 		m_eCurStance	= RUN;
 		m_eCurDir		= ObjDir::UP;
+
+		m_fAngle = 270.0f;
 	}
 	else if (KEY_PRESSING('S') && g_bIsActive)
 	{
@@ -723,6 +731,8 @@ void CPlayer::KeyInput()
 		m_pFrameKey		= L"Player_Down_";
 		m_eCurStance	= RUN;
 		m_eCurDir		= ObjDir::DOWN;
+
+		m_fAngle = 90.0f;
 	}
 
 	else if (KEY_UP('A'))
@@ -742,16 +752,17 @@ void CPlayer::KeyInput()
 	else if (KEY_DOWN(VK_SPACE) /*|| KEY_DOWN(VK_LBUTTON)*/)
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"pAttack.wav", CSoundMgr::PLAYER_ATTACK);
-
-
-		m_bIsAttack = true;
-		m_eCurStance = ATTACK;
+		m_bIsAttack		= true;
+		m_eCurStance	= ATTACK;
 
 		CObj::UpdateColXYPos();
 		m_fAttackX = m_tColInfo.fX + cosf(m_fAngle * PI / 180.f) * fAttLen;
 		m_fAttackY = m_tColInfo.fY + sinf(m_fAngle * PI / 180.f) * fAttLen;
 
 		CObjMgr::GetInstance()->AddObject(CreateSkill<CSkill>(), ObjID::SKILL);
+
+		// Send AttackPacket
+		CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_BASIC);
 	}
 
 	// 스킬 공격 등록
@@ -795,8 +806,8 @@ void CPlayer::KeyInput()
 			}
 		}
 
-		m_bIsSkill = true;
-		m_eCurStance = SKILL;
+		m_bIsSkill		= true;
+		m_eCurStance	= SKILL;
 
 		CObj::UpdateColXYPos();
 
@@ -812,15 +823,27 @@ void CPlayer::KeyInput()
 			{
 			case SOUL:
 				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillSoul>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
+				// m_tInfo.iMp -= 100;
+
+				// Send AttackPacket
+				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_SOUL);
+
 				break;
 			case MOON:
 				CObjMgr::GetInstance()->AddObject(CreateSkill<CSkillMoon>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
+				// m_tInfo.iMp -= 100;
+				
+				// Send AttackPacket
+				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_MOON);
+
 				break;
 			case MULTI:
 				CObjMgr::GetInstance()->AddObject(CreateSkill<CMultiAttack>(), ObjID::SKILL);
-				m_tInfo.iMp -= 100;
+				// m_tInfo.iMp -= 100;
+
+				// Send AttackPacket
+				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_MULTI);
+
 				break;
 			}
 		}

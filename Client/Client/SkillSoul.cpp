@@ -80,11 +80,11 @@ int CSkillSoul::Update()
 
 	iTime += 10;
 
-	if (iTime == 100)
-	{
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(m_tInfo.fCX, m_tInfo.fCY/2, m_tInfo.fX, m_tInfo.fY, (int)(m_pPlayer->GetInfo().iAtt*1.2f)),
-			ObjID::SKILL_COLBOX);
-	}
+	//if (iTime == 100)
+	//{
+	//	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(m_tInfo.fCX, m_tInfo.fCY/2, m_tInfo.fX, m_tInfo.fY, (int)(m_pPlayer->GetInfo().iAtt*1.2f)),
+	//		ObjID::SKILL_COLBOX);
+	//}
 
 	return NO_EVENT;
 }

@@ -53,10 +53,10 @@ int CMultiAttack::Update()
 
 	
 
-	/*충돌박스 생성 횟수*/
-	if(iTime % 130 == 0)
-		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(50.f, 50.f, m_tInfo.fX, m_tInfo.fY, (int)(m_pPlayer->GetInfo().iAtt*0.8f)),
-			ObjID::SKILL_COLBOX);
+	///*충돌박스 생성 횟수*/
+	//if(iTime % 130 == 0)
+	//	CObjMgr::GetInstance()->AddObject(CAbstractFactory<CSkillColBox>::CreateColBox(50.f, 50.f, m_tInfo.fX, m_tInfo.fY, (int)(m_pPlayer->GetInfo().iAtt*0.8f)),
+	//		ObjID::SKILL_COLBOX);
 
 	return NO_EVENT;
 }
