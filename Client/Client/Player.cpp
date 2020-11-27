@@ -749,7 +749,7 @@ void CPlayer::KeyInput()
 	/*__________________________________________________________________________________________________________
 	[ Player Basic Attack ]
 	____________________________________________________________________________________________________________*/
-	else if (KEY_DOWN(VK_SPACE) /*|| KEY_DOWN(VK_LBUTTON)*/)
+	else if (KEY_DOWN(VK_SPACE) && g_bIsActive /*|| KEY_DOWN(VK_LBUTTON)*/)
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"pAttack.wav", CSoundMgr::PLAYER_ATTACK);
 		m_bIsAttack		= true;
@@ -766,24 +766,24 @@ void CPlayer::KeyInput()
 	}
 
 	// 스킬 공격 등록
-	else if (KEY_DOWN(VK_F1))
+	else if (KEY_DOWN(VK_F1) && g_bIsActive)
 	{
 		m_eSkill = MOON;
 		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(0);
 	}
-	else if (KEY_DOWN(VK_F2))
+	else if (KEY_DOWN(VK_F2) && g_bIsActive)
 	{
 		m_eSkill = SOUL;
 		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(1);
 	}
-	else if (KEY_DOWN(VK_F3))
+	else if (KEY_DOWN(VK_F3) && g_bIsActive)
 	{
 		m_eSkill = MULTI;
 		static_cast<CSkillIcon*>(m_pSkillIcon)->SetImageKey(4);
 	}
 
 	// 스킬 공격
-	else if (KEY_DOWN(VK_RBUTTON))
+	else if (KEY_DOWN(VK_RBUTTON) && g_bIsActive)
 	{
 		if (m_iComboCnt > 0)
 		{
@@ -857,7 +857,7 @@ void CPlayer::KeyInput()
 	/*__________________________________________________________________________________________________________
 	[ Use Potion. ]
 	____________________________________________________________________________________________________________*/
-	else if (KEY_DOWN(VK_F5))
+	else if (KEY_DOWN(VK_F5) && g_bIsActive)
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
@@ -869,7 +869,7 @@ void CPlayer::KeyInput()
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
 	}
-	else if (KEY_DOWN(VK_F6))
+	else if (KEY_DOWN(VK_F6) && g_bIsActive)
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
@@ -881,7 +881,7 @@ void CPlayer::KeyInput()
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
 	}
-	else if (KEY_DOWN(VK_F7))
+	else if (KEY_DOWN(VK_F7) && g_bIsActive)
 	{
 		CSoundMgr::GetInstance()->PlaySound(L"PotionUse.wav", CSoundMgr::USE_POTION);
 
@@ -898,7 +898,7 @@ void CPlayer::KeyInput()
 	[ Show Player's UI ]
 	____________________________________________________________________________________________________________*/
 	// Player Info.
-	else if (KEY_DOWN('P'))
+	else if (KEY_DOWN('P') && g_bIsActive)
 	{
 		m_bIsInfoUi = !m_bIsInfoUi;
 		static_cast<CPlayerInfo*>(m_pPlayerInfo)->SetbIsInfoOn(m_bIsInfoUi);
@@ -910,7 +910,7 @@ void CPlayer::KeyInput()
 	}
 
 	// Player Inventory.
-	else if (KEY_DOWN('I'))
+	else if (KEY_DOWN('I') && g_bIsActive)
 	{
 		m_bIsInvenUi = !m_bIsInvenUi;
 		static_cast<CInventory*>(m_pInventory)->SetbIsInvenOn(m_bIsInvenUi);
@@ -924,7 +924,7 @@ void CPlayer::KeyInput()
 	}
 
 	// Player Equipment.
-	else if (KEY_DOWN('E'))
+	else if (KEY_DOWN('E') && g_bIsActive)
 	{
 		m_bIsEquipUi = !m_bIsEquipUi;
 		static_cast<CEquipment*>(m_pEquipment)->SetbIsEquipOn(m_bIsEquipUi);
