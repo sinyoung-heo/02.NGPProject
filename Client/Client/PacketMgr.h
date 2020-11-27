@@ -17,7 +17,7 @@ public:
 	void	SendPlayerMovePacket(unsigned char dir);
 	void	SendPlayerSceneID(unsigned char scene_id);
 	void	SendPlayerStance(int stance, int dir);
-	void	SendPlayerAttack(unsigned char skill);
+	void	SendPlayerAttack(float attX, float attY, unsigned char skill);
 
 private:
 	void	SendPacketToServer(void* packet);

@@ -56,6 +56,7 @@ void            send_playerstance_packet(int to, int id, int stance, int dir);  
 void            send_scenechange_packet(int to, int id);                        // Player Scene 정보.
 void            send_createDungeonMonster(int to);                              // Monster 생성 정보.
 void            send_monsterinfo(int to, CMonster* src);                        // Server에 존재하는 Monster 정보.
+void            send_playerSkill_packet(int to, int id, char skillname, float attX, float attY);
 
 void            ProcessMove(int id, char dir);
 bool            CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius,
@@ -565,6 +566,12 @@ void ProcessPacket(char* ptr, int server_id)
     {
         cs_packet_playerattack* p = reinterpret_cast<cs_packet_playerattack*>(ptr);
         g_tClient[server_id].cur_skill = p->cur_skill;
+        
+        for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+        {
+            if (i != server_id)
+                send_playerSkill_packet(i, server_id, p->cur_skill, p->skillPos_x, p->skillPos_y);
+        }
     }
     break;
 
@@ -763,6 +770,20 @@ void send_monsterinfo(int to, CMonster* src)
     p.is_dead       = src->is_dead;
     p.cur_stance    = src->cur_stance;
     p.cur_frame     = src->frame.frame_start;
+
+    send_packet(to, &p);
+}
+
+void send_playerSkill_packet(int to, int id, char skillname, float attX, float attY)
+{
+    sc_packet_playerattack p;
+    p.size = sizeof(p);
+    p.type = SC_PACKET_PLAYERATTACK;
+
+    p.id = id;
+    p.cur_skill = skillname;
+    p.skillPos_x = attX;
+    p.skillPos_y = attY;
 
     send_packet(to, &p);
 }

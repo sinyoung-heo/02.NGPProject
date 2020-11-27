@@ -2,6 +2,11 @@
 #include "PacketMgr.h"
 #include "COthers.h"
 #include "Cow.h"
+#include "SkillMoon.h"
+#include "SkillSoul.h"
+#include "MultiAttack.h"
+#include "HpPotionEffect.h"
+#include "MpPotionEffect.h"
 
 IMPLEMENT_SINGLETON(CPacketMgr)
 
@@ -282,6 +287,55 @@ void CPacketMgr::ProcessPacket(char* ptr)
 	}
 	break;
 
+	case SC_PACKET_PLAYERATTACK:
+	{
+		sc_packet_playerattack* my_packet = reinterpret_cast<sc_packet_playerattack*>(ptr);
+		
+		int other_id = my_packet->id;
+		
+#ifdef SHOW_LOG
+		cout << "Player Attack Packet, ID: " << other_id <<
+			" / Skill Num: " << static_cast<int>(my_packet->cur_skill) << endl;
+#endif // SHOW_LOG
+		
+		if (0 != g_umap_serverObj.count(other_id))
+		{
+			CObj* others = static_cast<COthers*>(g_umap_serverObj[other_id]);
+			switch (my_packet->cur_skill)
+			{
+			case SKILL_MOON:
+				CObjMgr::GetInstance()->AddObject(static_cast<COthers*>(g_umap_serverObj[other_id])
+					->CreateSkill<CSkillMoon>(my_packet->skillPos_x, my_packet->skillPos_y), ObjID::SKILL);
+				break;
+
+			case SKILL_SOUL:
+				CObjMgr::GetInstance()->AddObject(static_cast<COthers*>(g_umap_serverObj[other_id])
+					->CreateSkill<CSkillSoul>(my_packet->skillPos_x, my_packet->skillPos_y), ObjID::SKILL);
+				break;
+			case SKILL_MULTI:
+				CObjMgr::GetInstance()->AddObject(static_cast<COthers*>(g_umap_serverObj[other_id])
+					->CreateSkill<CMultiAttack>(my_packet->skillPos_x, my_packet->skillPos_y), ObjID::SKILL);
+				break;
+			case SKILL_HP:
+				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(my_packet->skillPos_x, my_packet->skillPos_y - 1.f),
+					ObjID::EFFECT);
+				break;
+			case SKILL_SP:
+				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(my_packet->skillPos_x, my_packet->skillPos_y - 1.f),
+					ObjID::EFFECT);
+				break;
+			case SKILL_MP:
+				CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(my_packet->skillPos_x, my_packet->skillPos_y - 1.f),
+					ObjID::EFFECT);
+				break;
+			default:
+				break;
+			}
+		}
+		
+		
+	}
+		break;
 
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
@@ -321,12 +375,14 @@ void CPacketMgr::SendPlayerStance(int stance, int dir)
 	SendPacketToServer(&packet);
 }
 
-void CPacketMgr::SendPlayerAttack(unsigned char skill)
+void CPacketMgr::SendPlayerAttack(float attX, float attY, unsigned char skill)
 {
 	cs_packet_playerattack packet;
 	packet.size			= sizeof(packet);
 	packet.type			= CS_PACKET_PLAYERATTACK;
 	packet.cur_skill	= skill;
+	packet.skillPos_x	= attX;
+	packet.skillPos_y	= attY;
 
 	SendPacketToServer(&packet);
 }

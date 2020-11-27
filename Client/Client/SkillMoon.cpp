@@ -29,8 +29,6 @@ void CSkillMoon::Initialize()
 
 	m_pPlayer = CObjMgr::GetInstance()->GetPlayer();
 
-
-
 	m_BlendFunction.BlendOp = 0;
 	m_BlendFunction.BlendFlags = 0;
 	m_BlendFunction.SourceConstantAlpha = 255;

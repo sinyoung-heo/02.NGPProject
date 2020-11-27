@@ -30,6 +30,19 @@ private:
     void SceneChange();
     void UpdateAnimationKey();
 
+public:
+    template<typename T>
+    CObj* CreateSkill()
+    {
+        return CAbstractFactory<T>::CreateObj(m_fAttackX, m_fAttackY, m_fAngle);
+    }
+
+    template<typename T>
+    CObj* CreateSkill(float x,float y)
+    {
+        return CAbstractFactory<T>::CreateObj(x, y);
+    }
+
 private:
     wstring m_pFrameKey;
 

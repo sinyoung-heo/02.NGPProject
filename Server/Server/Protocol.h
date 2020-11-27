@@ -47,6 +47,7 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_PLAYERSTANCE   = 5;
     constexpr char SC_PACKET_MONSTERCREATE  = 6;
     constexpr char SC_PACKET_MONSTERINFO    = 7;
+    constexpr char SC_PACKET_PLAYERATTACK   = 8;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -111,6 +112,18 @@ namespace PROTOCOL_TEST
         int     cur_stance;
         int     cur_dir;
     };
+
+    struct sc_packet_playerattack
+    {
+        char size;
+        char type;
+
+        char cur_skill;
+        int     id;
+        float skillPos_x;
+        float skillPos_y;
+    };
+
 
     struct sc_packet_scenechange
     {
@@ -229,6 +242,9 @@ namespace PROTOCOL_TEST
     constexpr char SKILL_MOON   = 1;
     constexpr char SKILL_MULTI  = 2;
     constexpr char SKILL_BASIC  = 3;
+    constexpr char SKILL_HP     = 4;
+    constexpr char SKILL_SP     = 5;
+    constexpr char SKILL_MP     = 6;
 
     struct cs_packet_playerattack
     {
@@ -236,6 +252,8 @@ namespace PROTOCOL_TEST
         char type;
 
         char cur_skill;
+        float skillPos_x;
+        float skillPos_y;
     };
 #pragma pack(pop)
 }

@@ -762,7 +762,7 @@ void CPlayer::KeyInput()
 		CObjMgr::GetInstance()->AddObject(CreateSkill<CSkill>(), ObjID::SKILL);
 
 		// Send AttackPacket
-		CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_BASIC);
+		CPacketMgr::GetInstance()->SendPlayerAttack(m_fAttackX, m_fAttackY,SKILL_BASIC);
 	}
 
 	// 스킬 공격 등록
@@ -826,7 +826,7 @@ void CPlayer::KeyInput()
 				// m_tInfo.iMp -= 100;
 
 				// Send AttackPacket
-				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_SOUL);
+				CPacketMgr::GetInstance()->SendPlayerAttack(m_fAttackX, m_fAttackY, SKILL_SOUL);
 
 				break;
 			case MOON:
@@ -834,7 +834,7 @@ void CPlayer::KeyInput()
 				// m_tInfo.iMp -= 100;
 				
 				// Send AttackPacket
-				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_MOON);
+				CPacketMgr::GetInstance()->SendPlayerAttack(m_fAttackX, m_fAttackY, SKILL_MOON);
 
 				break;
 			case MULTI:
@@ -842,7 +842,7 @@ void CPlayer::KeyInput()
 				// m_tInfo.iMp -= 100;
 
 				// Send AttackPacket
-				CPacketMgr::GetInstance()->SendPlayerAttack(SKILL_MULTI);
+				CPacketMgr::GetInstance()->SendPlayerAttack(m_fAttackX, m_fAttackY, SKILL_MULTI);
 
 				break;
 			}
@@ -868,6 +868,8 @@ void CPlayer::KeyInput()
 
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CHpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
+		
+		CPacketMgr::GetInstance()->SendPlayerAttack(m_tInfo.fX, m_tInfo.fY, SKILL_HP);
 	}
 	else if (KEY_DOWN(VK_F6) && g_bIsActive)
 	{
@@ -880,6 +882,8 @@ void CPlayer::KeyInput()
 
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
+
+		CPacketMgr::GetInstance()->SendPlayerAttack(m_tInfo.fX, m_tInfo.fY, SKILL_SP);
 	}
 	else if (KEY_DOWN(VK_F7) && g_bIsActive)
 	{
@@ -892,6 +896,8 @@ void CPlayer::KeyInput()
 
 		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMpPotionEffect>::CreateObj(m_tInfo.fX, m_tInfo.fY - 1.f),
 			ObjID::EFFECT);
+
+		CPacketMgr::GetInstance()->SendPlayerAttack(m_tInfo.fX, m_tInfo.fY, SKILL_MP);
 	}
 
 	/*__________________________________________________________________________________________________________
