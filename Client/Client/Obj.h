@@ -39,6 +39,7 @@ public:
 	void SetName(char* pName) { strcpy_s(m_szName, pName); }
 	void SetCurScene(const CSceneMgr::SCENE& eID) { m_eCurScene = eID; }
 	void SetIsDead(const bool& bIsDead) { m_bIsDead = bIsDead; }
+	void SetHpInfo(const int& hp) { m_tInfo.iHp = hp; }
 
 	//////////////////////////////////////////////////////////////////
 	void SetPlayerHp(const int& hp)		{ m_tInfo.iMaxHp = hp; m_tInfo.iHp = hp; };

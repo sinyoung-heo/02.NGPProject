@@ -49,6 +49,7 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_MONSTERINFO    = 7;
     constexpr char SC_PACKET_PLAYERATTACK   = 8;
     constexpr char SC_PACKET_DMGBOXCREATE   = 9;
+    constexpr char SC_PACKET_MONCRASHCREATE = 10;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -183,6 +184,16 @@ namespace PROTOCOL_TEST
         float   x;
         float   y;
         int     dmg;
+    };
+
+    struct sc_packet_moncrashcreate
+    {
+        char size;
+        char type;
+
+        float x;
+        float y;
+        int hp;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////

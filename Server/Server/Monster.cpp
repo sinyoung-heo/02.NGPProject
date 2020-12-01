@@ -17,10 +17,6 @@ int CMonster::UpdateMonster(const float& fTimeDelta)
 
         if (MON_COW == type)
             UpdateCow(fTimeDelta);
-        else if (MON_NINJA == type)
-            UpdateNinja(fTimeDelta);
-        else if (MON_BORIS == type)
-            UpdateBoris(fTimeDelta);
     }
 
     MoveFrame(fTimeDelta);
@@ -88,6 +84,9 @@ void CMonster::UpdateCow(const float& fTimeDelta)
     {
         // Target АјАн.
         cur_stance = MON_STANCE_ATTACK;
+
+        att_x = x + cosf(angle) * att_len;
+        att_y = y - sinf(angle) * att_len;
 
         dist = CalcDist();
         if (dist > 100.0f)

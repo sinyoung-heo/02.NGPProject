@@ -8,6 +8,7 @@
 #include "HpPotionEffect.h"
 #include "MpPotionEffect.h"
 #include "DmgBox.h"
+#include "MonCrash.h"
 
 IMPLEMENT_SINGLETON(CPacketMgr)
 
@@ -341,6 +342,17 @@ void CPacketMgr::ProcessPacket(char* ptr)
 	}
 		break;
 
+	case SC_PACKET_MONCRASHCREATE:
+	{
+		sc_packet_moncrashcreate* my_packet = reinterpret_cast<sc_packet_moncrashcreate*>(ptr);
+
+		if (!CObjMgr::GetInstance()->GetPlayerLst().empty())
+			CObjMgr::GetInstance()->GetPlayer()->SetHpInfo(my_packet->hp);
+
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CMonCrash>::CreateObj(my_packet->x, my_packet->y),
+			ObjID::EFFECT);
+	}
+		break;
 
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);

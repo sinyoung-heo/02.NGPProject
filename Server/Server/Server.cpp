@@ -58,6 +58,7 @@ void            send_createDungeonMonster(int to);                              
 void            send_monsterinfo(int to, CMonster* src);                        // Server에 존재하는 Monster 정보.
 void            send_playerSkill_packet(int to, int id, char skillname, float attX, float attY);
 void            send_dmgboxcreate_packet(int id, float x, float y, int dmg);
+void            send_moncrashcreate_packet(int id, float x, float y, int hp);
 
 void            ProcessMove(int id, char dir);
 bool            CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius,
@@ -309,51 +310,66 @@ DWORD __stdcall CollisionThread(LPVOID arg)
             // Check Collision.
             for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
             {
-                // 사용중인 Client의 유저와 Monster 충돌검사.
-                // Player의 상태가 Attack 이나 Skill이 아닌 경우에는 스킵.
-                if (g_tClient[i].in_use &&
-                    (STANCE_ATTACK == g_tClient[i].cur_stance) ||
-                    (STANCE_SKILL == g_tClient[i].cur_stance))
-                {
-					for (auto& monList : g_monLst)
-					{
-						for (auto& pMonster : monList)
-						{
-                            if (pMonster->is_dead)
-                                continue;
+                if (!g_tClient[i].in_use)
+                    continue;
 
+				for (auto& monList : g_monLst)
+				{
+					for (auto& pMonster : monList)
+					{
+						if (pMonster->is_dead)
+							continue;
+                        
+						if ((STANCE_ATTACK == g_tClient[i].cur_stance) ||
+							(STANCE_SKILL == g_tClient[i].cur_stance))
+						{
+							// PlayerAttack <-> Monster 충돌검사.
 							if (CheckSphere(g_tClient[i].attX, g_tClient[i].attY, g_tClient[i].att_radius,
 								pMonster->x, pMonster->y, pMonster->radius))
 							{
 								if (SKILL_BASIC == g_tClient[i].cur_skill)
-                                    pMonster->updatetime = 0.5f;
+									pMonster->updatetime = 0.5f;
 								else if (SKILL_MOON == g_tClient[i].cur_skill)
-                                    pMonster->updatetime = 0.1f;
+									pMonster->updatetime = 0.1f;
 								else if (SKILL_MULTI == g_tClient[i].cur_skill)
-                                    pMonster->updatetime = 0.15f;
+									pMonster->updatetime = 0.15f;
 								else if (SKILL_SOUL == g_tClient[i].cur_skill)
-                                    pMonster->updatetime = 0.5f;
+									pMonster->updatetime = 0.5f;
 
-                                if (pMonster->is_collision)
-                                {
-                                    pMonster->is_collision = !pMonster->is_collision;
+								if (pMonster->is_collision)
+								{
+									pMonster->is_collision = !pMonster->is_collision;
 
-                                    // Monster Hp 감소.
-                                    pMonster->hp -= g_tClient[i].att;
+									// Monster Hp 감소.
+									pMonster->hp -= g_tClient[i].att;
 
-                                    // cout << "Collision Player - Monster" << endl;
-                                    // Send CreateDmgBox Packet.
-                                    send_dmgboxcreate_packet(i, pMonster->x, pMonster->y, g_tClient[i].att);
-                                    
-                                }
+									// 데미지 폰트 이팩트 생성.
+									send_dmgboxcreate_packet(i, pMonster->x, pMonster->y, g_tClient[i].att);
+
+								}
 
 							}
-
 						}
 
+						// MonsterAttack <-> Player 충돌검사.
+						if (CheckSphere(pMonster->att_x, pMonster->att_y, pMonster->att_radius,
+							g_tClient[i].x, g_tClient[i].y, g_tClient[i].radius))
+						{
+							if (pMonster->frame.frame_start > 5.f && pMonster->frame.frame_start < 6.f)
+							{
+								// Player Hp 감소.
+								g_tClient[i].hp -= pMonster->att;
+
+								// 피격 이팩트 생성.
+								send_moncrashcreate_packet(i, g_tClient[i].x, g_tClient[i].y, g_tClient[i].hp);
+							}
+						}
 					}
 
-                }
+				}
+
+                
+
             }
 
         }
@@ -781,13 +797,13 @@ void send_monsterinfo(int to, CMonster* src)
 void send_playerSkill_packet(int to, int id, char skillname, float attX, float attY)
 {
     sc_packet_playerattack p;
-    p.size = sizeof(p);
-    p.type = SC_PACKET_PLAYERATTACK;
+    p.size          = sizeof(p);
+    p.type          = SC_PACKET_PLAYERATTACK;
 
-    p.id = id;
-    p.cur_skill = skillname;
-    p.skillPos_x = attX;
-    p.skillPos_y = attY;
+    p.id            = id;
+    p.cur_skill     = skillname;
+    p.skillPos_x    = attX;
+    p.skillPos_y    = attY;
 
     send_packet(to, &p);
 }
@@ -804,7 +820,32 @@ void send_dmgboxcreate_packet(int id, float x, float y, int dmg)
 
     send_packet(id, &p);
 
+    // 같은 SCENE_ID에 있는 유저에게만 생성하도록 알림.
+    for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+    {
+        if (i == id)
+            continue;
 
+        if (g_tClient[i].in_use)
+        {
+            if (g_tClient[i].scene_id == g_tClient[id].scene_id)
+                send_packet(i, &p);
+        }
+    }
+}
+
+void send_moncrashcreate_packet(int id, float x, float y, int hp)
+{
+    sc_packet_moncrashcreate p;
+    p.size  = sizeof(p);
+    p.type  = SC_PACKET_MONCRASHCREATE;
+    p.x     = x;
+    p.y     = y;
+    p.hp    = hp;
+
+    send_packet(id, &p);
+
+    // 같은 SCENE_ID에 있는 유저에게만 생성하도록 알림.
     for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
     {
         if (i == id)

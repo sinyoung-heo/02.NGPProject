@@ -51,19 +51,24 @@ public:
 
     FRAME   frame;
 
-    char    scene_id    = 0;
-    char    cur_stance  = 0;
-    char    cur_state   = 0;
-    char    cur_dir     = 0;
+    char    scene_id        = 0;
+    char    cur_stance      = 0;
+    char    cur_state       = 0;
+    char    cur_dir         = 0;
 
-    char    pre_stance  = 0;
+    char    pre_stance      = 0;
 
-    CINFO*  target      = nullptr;
-    float   dist        = 0.0f;
+    CINFO*  target          = nullptr;
+    float   dist            = 0.0f;
 
     // Collision.
     bool    is_collision    = true;
     float   updatetime      = 0.5f;
     float   collision_time  = 0.0f;
+
+    float att_x             = 0.0f;
+    float att_y             = 0.0f;
+    float att_len           = 0.0f;
+    float att_radius        = 50.0f;
 };
 
