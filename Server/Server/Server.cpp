@@ -57,6 +57,7 @@ void            send_scenechange_packet(int to, int id);                        
 void            send_createDungeonMonster(int to);                              // Monster 생성 정보.
 void            send_monsterinfo(int to, CMonster* src);                        // Server에 존재하는 Monster 정보.
 void            send_playerSkill_packet(int to, int id, char skillname, float attX, float attY);
+void            send_dmgboxcreate_packet(int id, float x, float y, int dmg);
 
 void            ProcessMove(int id, char dir);
 bool            CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius,
@@ -290,12 +291,14 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                     int iEvent = (*iter_begin)->UpdateMonster(g_pTimerTimeDelta->GetTimeDelta());
                     if (SERVER_DEADOBJ == iEvent)
                     {
+                        EnterCriticalSection(&cs);
                         if (*iter_begin)
                         {
                             delete (*iter_begin);
                             *iter_begin = nullptr;
                         }
                         iter_begin = monLst.erase(iter_begin);
+                        LeaveCriticalSection(&cs);
                     }
                     else
                         ++iter_begin;
@@ -338,7 +341,10 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                                     // Monster Hp 감소.
                                     pMonster->hp -= g_tClient[i].att;
 
-                                    cout << "Collision Player - Monster" << endl;
+                                    // cout << "Collision Player - Monster" << endl;
+                                    // Send CreateDmgBox Packet.
+                                    send_dmgboxcreate_packet(i, pMonster->x, pMonster->y, g_tClient[i].att);
+                                    
                                 }
 
 							}
@@ -784,6 +790,32 @@ void send_playerSkill_packet(int to, int id, char skillname, float attX, float a
     p.skillPos_y = attY;
 
     send_packet(to, &p);
+}
+
+void send_dmgboxcreate_packet(int id, float x, float y, int dmg)
+{
+    sc_packet_dmgboxcreate p;
+    p.size  = sizeof(p);
+    p.type  = SC_PACKET_DMGBOXCREATE;
+
+    p.x     = x;
+    p.y     = y;
+    p.dmg   = dmg;
+
+    send_packet(id, &p);
+
+
+    for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
+    {
+        if (i == id)
+            continue;
+
+        if (g_tClient[i].in_use)
+        {
+            if (g_tClient[i].scene_id == g_tClient[id].scene_id)
+                send_packet(i, &p);
+        }
+    }
 }
 
 void ProcessMove(int id, char dir)

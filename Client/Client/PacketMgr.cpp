@@ -7,6 +7,7 @@
 #include "MultiAttack.h"
 #include "HpPotionEffect.h"
 #include "MpPotionEffect.h"
+#include "DmgBox.h"
 
 IMPLEMENT_SINGLETON(CPacketMgr)
 
@@ -277,14 +278,6 @@ void CPacketMgr::ProcessPacket(char* ptr)
 				}
 			}
 		}
-		else if (MON_NINJA == my_packet->montype)
-		{
-
-		}
-		else if (MON_BORIS == my_packet->montype)
-		{
-
-		}
 	}
 	break;
 
@@ -337,6 +330,17 @@ void CPacketMgr::ProcessPacket(char* ptr)
 		
 	}
 		break;
+
+	case SC_PACKET_DMGBOXCREATE:
+	{
+		sc_packet_dmgboxcreate* my_packet = reinterpret_cast<sc_packet_dmgboxcreate*>(ptr);
+
+		CObjMgr::GetInstance()->AddObject(CAbstractFactory<CDmgBox>::CreateDmgBox(my_packet->x - 20, my_packet->y - 80.f, my_packet->dmg),
+			ObjID::EFFECT);
+
+	}
+		break;
+
 
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);

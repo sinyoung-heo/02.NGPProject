@@ -8,8 +8,8 @@ namespace PROTOCOL_TEST
 #define SERVER_DEADOBJ 1
 
     constexpr unsigned int  SERVER_PORT = 9000;
-    // constexpr char          SERVER_IP[32] = "127.0.0.1";
-    constexpr char SERVER_IP[32] = "192.168.143.74";
+    constexpr char          SERVER_IP[32] = "127.0.0.1";
+    // constexpr char SERVER_IP[32] = "192.168.143.74";
 
     constexpr int MAX_BUF_SIZE  = 4'096;
     constexpr int MAX_ID_LEN    = 64;
@@ -48,6 +48,7 @@ namespace PROTOCOL_TEST
     constexpr char SC_PACKET_MONSTERCREATE  = 6;
     constexpr char SC_PACKET_MONSTERINFO    = 7;
     constexpr char SC_PACKET_PLAYERATTACK   = 8;
+    constexpr char SC_PACKET_DMGBOXCREATE   = 9;
 
     constexpr char CS_PACKET_LOGIN          = 0;
     constexpr char CS_PACKET_MOVE           = 1;
@@ -172,6 +173,16 @@ namespace PROTOCOL_TEST
         float   cur_frame;
 
         bool    is_dead;
+    };
+
+    struct sc_packet_dmgboxcreate
+    {
+        char    size;
+        char    type;
+
+        float   x;
+        float   y;
+        int     dmg;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////
