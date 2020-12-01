@@ -126,6 +126,7 @@ void CPacketMgr::ProcessPacket(char* ptr)
 
 			g_umap_serverObj[id]->SetName(my_packet->name);
 			g_umap_serverObj[id]->SetPos(my_packet->x, my_packet->y);
+			g_umap_serverObj[id]->SetCurScene(static_cast<CSceneMgr::SCENE>(my_packet->scene_id));
 
 		}
 	}
