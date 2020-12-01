@@ -91,6 +91,7 @@ namespace PROTOCOL_TEST
         int     id;
         char    name[MAX_ID_LEN];
         char    o_type;
+        char    scene_id;
         float   x, y;
     };
 

@@ -441,28 +441,25 @@ void Disconnect_Client(int id)
         }
     }
 
+    EnterCriticalSection(&cs);
     g_tClient[id].in_use = false;
     closesocket(g_tClient[id].m_sock);
     g_tClient[id].m_sock = 0;
     memset(&g_tClient[id], 0, sizeof(g_tClient[id]));
+    LeaveCriticalSection(&cs);
 }
 
 void ProcessPacket(char* ptr, int server_id)
 {
-    ///* 패킷 타입 확인 */
-    //char p_type = g_tClient[server_id].m_packet_buf[1];
-
+    /* 패킷 타입 확인 */
     switch (ptr[1])
     {
     case CS_PACKET_LOGIN:
     {
         /* 로그인 확인 처리 */
         cs_packet_login* p = reinterpret_cast<cs_packet_login*>(ptr);
-
-        //EnterCriticalSection(&cs);
         strcpy_s(g_tClient[server_id].name, p->name);
-        //LeaveCriticalSection(&cs);
-
+ 
         /* 로그인 확인 처리 완료 후 작업 */
         send_login_ok(server_id);
 
@@ -670,6 +667,7 @@ void send_enter_packet(int to, int id)
     strcpy_s(p.name, g_tClient[id].name);
     //LeaveCriticalSection(&cs);
     p.o_type = 0;
+    p.scene_id = g_tClient[id].scene_id;
     p.x = g_tClient[id].x;
     p.y = g_tClient[id].y;
 
