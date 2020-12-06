@@ -3,6 +3,9 @@
 #include <iostream>
 #include <random>
 #include <list>
+#include <fstream>
+#include <chrono>
+#include <iomanip>
 #include "Protocol.h"
 #include "Struct.h"
 #include "Timer.h"
@@ -63,6 +66,9 @@ void            send_moncrashcreate_packet(int id, float x, float y, int hp);
 void            ProcessMove(int id, char dir);
 bool            CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius,
                             const float& src_x, const float& src_y, const float& src_radius);
+
+void            SaveLoginData(const int& id);
+void            SaveLeaveData(const int& id);
 
 
 #pragma region MONSTER
@@ -463,6 +469,9 @@ void Disconnect_Client(int id)
         }
     }
 
+    // Logout Data 저장.
+    SaveLeaveData(id);
+
     EnterCriticalSection(&cs);
     g_tClient[id].in_use = false;
     closesocket(g_tClient[id].m_sock);
@@ -675,6 +684,8 @@ void send_login_ok(int id)
 
     /* 로그인 처리 후 해당 클라이언트에게 패킷 전송 */
     send_packet(id, &p);
+
+    SaveLoginData(id);
 }
 
 void send_enter_packet(int to, int id)
@@ -926,6 +937,38 @@ bool CheckSphere(const float& dst_x, const float& dst_y, const float& dst_radius
     float d = sqrtf(w * w + h * h);
 
     return (sum_radius >= d);
+}
+
+void SaveLoginData(const int& id)
+{
+    string name{ g_tClient[id].name };
+
+    ofstream out("../Data/LoginData.txt", ios::app);
+
+    // 시간값을 얻는다.
+    auto tp = chrono::system_clock::now();			// time period
+    auto ct = chrono::system_clock::to_time_t(tp);	// 몇년, 몇월 몇일 몇시 몇분 몇초. current time
+    auto lt = localtime(&ct);						// lcoal time. 대한민국 시간.
+
+    out.imbue(locale("korean"));
+
+    out << name << "\t" << put_time(lt, "%c - (%A)") << endl;
+}
+
+void SaveLeaveData(const int& id)
+{
+    string name{ g_tClient[id].name };
+
+    ofstream out("../Data/LogoutData.txt", ios::app);
+
+    // 시간값을 얻는다.
+    auto tp = chrono::system_clock::now();			// time period
+    auto ct = chrono::system_clock::to_time_t(tp);	// 몇년, 몇월 몇일 몇시 몇분 몇초. current time
+    auto lt = localtime(&ct);						// lcoal time. 대한민국 시간.
+
+    out.imbue(locale("korean"));
+
+    out << name << "\t" << put_time(lt, "%c - (%A)") << endl;
 }
 
 
