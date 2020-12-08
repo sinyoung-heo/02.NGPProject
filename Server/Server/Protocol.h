@@ -9,7 +9,6 @@ namespace PROTOCOL_TEST
 
     constexpr unsigned int  SERVER_PORT = 9000;
     constexpr char          SERVER_IP[32] = "127.0.0.1";
-    // constexpr char SERVER_IP[32] = "192.168.143.74";
 
     constexpr int MAX_BUF_SIZE  = 4'096;
     constexpr int MAX_ID_LEN    = 64;

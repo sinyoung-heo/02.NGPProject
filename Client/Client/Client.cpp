@@ -181,7 +181,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_KEYDOWN:
         if (wParam == VK_ESCAPE)
-            DestroyWindow(hWnd);
+            //DestroyWindow(hWnd);
+            PostQuitMessage(0);
+
         break;
     case WM_PAINT:
     {
