@@ -274,8 +274,9 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                     float  dist = 9999.0f;
                     for (int i = 0; i < MAX_PLAYER; ++i)
                     {
+                        EnterCriticalSection(&cs);
                         if (g_tClient[i].in_use)
-                        {
+                        {                
                             // Player와 같은 SceneID에 있을 경우에만 Target 설정. & MonsterInfo Send.
                             if (g_tClient[i].scene_id == (*iter_begin)->scene_id)
                             {
@@ -292,10 +293,13 @@ DWORD __stdcall CollisionThread(LPVOID arg)
                                 send_monsterinfo(i, *iter_begin);
                             }
                         }
+                        LeaveCriticalSection(&cs);
                     }
 
                     // Monster Update.
+                    EnterCriticalSection(&cs);
                     int iEvent = (*iter_begin)->UpdateMonster(g_pTimerTimeDelta->GetTimeDelta());
+                    LeaveCriticalSection(&cs);
                     if (SERVER_DEADOBJ == iEvent)
                     {
                         EnterCriticalSection(&cs);
@@ -316,8 +320,13 @@ DWORD __stdcall CollisionThread(LPVOID arg)
             // Check Collision.
             for (int i = 0; i < PROTOCOL_TEST::MAX_PLAYER; ++i)
             {
+                EnterCriticalSection(&cs);
                 if (!g_tClient[i].in_use)
+                {
+                    LeaveCriticalSection(&cs);
                     continue;
+                }
+                LeaveCriticalSection(&cs);
 
 				for (auto& monList : g_monLst)
 				{
@@ -372,10 +381,7 @@ DWORD __stdcall CollisionThread(LPVOID arg)
 						}
 					}
 
-				}
-
-                
-
+				}              
             }
 
         }
@@ -464,7 +470,9 @@ void Disconnect_Client(int id)
         {
             if (i != id)
             {
+                EnterCriticalSection(&cs);
                 send_leave_packet(i, id);
+                LeaveCriticalSection(&cs);
             }
         }
     }
